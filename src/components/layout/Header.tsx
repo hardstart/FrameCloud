@@ -62,19 +62,32 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Right — subtle roll indicator */}
-        <span
-          className="font-mono hidden sm:block"
-          style={{
-            fontSize: 9,
-            letterSpacing: "0.22em",
-            color: "rgba(255,255,255,0.18)",
-            textTransform: "uppercase",
-          }}
-          aria-hidden="true"
-        >
-          Visual Archive
-        </span>
+        {/* Right — nav links */}
+        <div className="flex items-center gap-4">
+          <span
+            className="font-mono hidden sm:block"
+            style={{
+              fontSize: 9,
+              letterSpacing: "0.22em",
+              color: "rgba(255,255,255,0.18)",
+              textTransform: "uppercase",
+            }}
+            aria-hidden="true"
+          >
+            Visual Archive
+          </span>
+          <Link
+            href="/dashboard"
+            className="font-mono uppercase transition-colors"
+            style={{
+              fontSize: 9,
+              letterSpacing: "0.18em",
+              color: "rgba(255,255,255,0.3)",
+            }}
+          >
+            Dashboard
+          </Link>
+        </div>
       </div>
     </header>
   );
