@@ -1,0 +1,73 @@
+{
+  "title": "Bali — January 2026",
+  "slug": "bali-january-2026",
+  "date": "2026-01-10",
+  "description": "Terraced rice fields, temple smoke, and monsoon light along the Campuhan Ridge.",
+  "photographer": "Hardy Rajput",
+  "passwordHash": "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh3y",
+  "isPasswordProtected": true,
+  "coverImage": "cover.jpg",
+  "photos": [
+    {
+      "filename": "001.jpg",
+      "caption": "Tegallalang rice terraces",
+      "dateTaken": "2026-01-10"
+    },
+    {
+      "filename": "002.jpg",
+      "caption": "Tanah Lot at sunset",
+      "dateTaken": "2026-01-10"
+    },
+    {
+      "filename": "003.jpg",
+      "caption": "Ubud market offerings",
+      "dateTaken": "2026-01-11"
+    },
+    {
+      "filename": "004.jpg",
+      "caption": "Campuhan Ridge walk, fog",
+      "dateTaken": "2026-01-11"
+    },
+    {
+      "filename": "005.jpg",
+      "caption": "Jatiluwih panorama",
+      "dateTaken": "2026-01-12"
+    },
+    {
+      "filename": "006.jpg",
+      "caption": "Temple ceremony smoke",
+      "dateTaken": "2026-01-12"
+    },
+    {
+      "filename": "007.jpg",
+      "caption": "Kuta shoreline at dusk",
+      "dateTaken": "2026-01-13"
+    },
+    {
+      "filename": "008.jpg",
+      "caption": "Monkey Forest, Ubud",
+      "dateTaken": "2026-01-13"
+    },
+    {
+      "filename": "009.jpg",
+      "caption": "Rice harvest, Sidemen",
+      "dateTaken": "2026-01-14"
+    },
+    {
+      "filename": "010.jpg",
+      "caption": "Lempuyang gate, misty",
+      "dateTaken": "2026-01-14"
+    },
+    {
+      "filename": "011.jpg",
+      "caption": "Jimbaran Bay, fishing boats",
+      "dateTaken": "2026-01-15"
+    },
+    {
+      "filename": "012.jpg",
+      "caption": "Nusa Penida cliffside",
+      "dateTaken": "2026-01-15"
+    }
+  ],
+  "totalPhotos": 12
+}

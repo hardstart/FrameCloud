@@ -1,0 +1,43 @@
+{
+  "title": "Iceland — Spring 2026",
+  "slug": "iceland-spring-2026",
+  "date": "2026-04-02",
+  "description": "Chasing the aurora and thaw across the Snæfellsnes Peninsula.",
+  "photographer": "Hardy Rajput",
+  "passwordHash": null,
+  "isPasswordProtected": false,
+  "coverImage": "cover.jpg",
+  "photos": [
+    {
+      "filename": "001.jpg",
+      "caption": "Aurora over Kirkjufell",
+      "dateTaken": "2026-04-02"
+    },
+    {
+      "filename": "002.jpg",
+      "caption": "Seljalandsfoss, first light",
+      "dateTaken": "2026-04-02"
+    },
+    {
+      "filename": "003.jpg",
+      "caption": "Ice cave, Vatnajökull",
+      "dateTaken": "2026-04-03"
+    },
+    {
+      "filename": "004.jpg",
+      "caption": "Black sand beach, Vík",
+      "dateTaken": "2026-04-03"
+    },
+    {
+      "filename": "005.jpg",
+      "caption": "Geothermal steam valley",
+      "dateTaken": "2026-04-04"
+    },
+    {
+      "filename": "006.jpg",
+      "caption": "Lupines and snowpack",
+      "dateTaken": "2026-04-04"
+    }
+  ],
+  "totalPhotos": 6
+}

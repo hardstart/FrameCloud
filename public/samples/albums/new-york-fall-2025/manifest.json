@@ -1,0 +1,88 @@
+{
+  "title": "New York — Fall 2025",
+  "slug": "new-york-fall-2025",
+  "date": "2025-10-20",
+  "description": "October in the city — Central Park ablaze, steam rising from gratings, the whole nine.",
+  "photographer": "Hardy Rajput",
+  "passwordHash": "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh3y",
+  "isPasswordProtected": true,
+  "coverImage": "cover.jpg",
+  "photos": [
+    {
+      "filename": "001.jpg",
+      "caption": "Central Park, The Mall",
+      "dateTaken": "2025-10-20"
+    },
+    {
+      "filename": "002.jpg",
+      "caption": "Brooklyn Bridge at dawn",
+      "dateTaken": "2025-10-20"
+    },
+    {
+      "filename": "003.jpg",
+      "caption": "Yellow cabs, Midtown rain",
+      "dateTaken": "2025-10-21"
+    },
+    {
+      "filename": "004.jpg",
+      "caption": "Steam grating, 5th Ave",
+      "dateTaken": "2025-10-21"
+    },
+    {
+      "filename": "005.jpg",
+      "caption": "High Line, leaves turning",
+      "dateTaken": "2025-10-22"
+    },
+    {
+      "filename": "006.jpg",
+      "caption": "Grand Central, morning rush",
+      "dateTaken": "2025-10-22"
+    },
+    {
+      "filename": "007.jpg",
+      "caption": "Williamsburg rooftop",
+      "dateTaken": "2025-10-23"
+    },
+    {
+      "filename": "008.jpg",
+      "caption": "Times Square, long exposure",
+      "dateTaken": "2025-10-23"
+    },
+    {
+      "filename": "009.jpg",
+      "caption": "Prospect Park fog",
+      "dateTaken": "2025-10-24"
+    },
+    {
+      "filename": "010.jpg",
+      "caption": "Chinatown market",
+      "dateTaken": "2025-10-24"
+    },
+    {
+      "filename": "011.jpg",
+      "caption": "DUMBO, cobblestone rain",
+      "dateTaken": "2025-10-25"
+    },
+    {
+      "filename": "012.jpg",
+      "caption": "Harlem brownstones",
+      "dateTaken": "2025-10-25"
+    },
+    {
+      "filename": "013.jpg",
+      "caption": "Lower East Side neon",
+      "dateTaken": "2025-10-26"
+    },
+    {
+      "filename": "014.jpg",
+      "caption": "Staten Island Ferry, twilight",
+      "dateTaken": "2025-10-26"
+    },
+    {
+      "filename": "015.jpg",
+      "caption": "Hudson River sunrise",
+      "dateTaken": "2025-10-27"
+    }
+  ],
+  "totalPhotos": 15
+}

@@ -1,0 +1,53 @@
+{
+  "title": "Tokyo — Winter 2025",
+  "slug": "tokyo-winter-2025",
+  "date": "2025-01-08",
+  "description": "Quiet streets and neon reflections during the coldest week of the year.",
+  "photographer": "Hardy Rajput",
+  "passwordHash": null,
+  "isPasswordProtected": false,
+  "coverImage": "cover.jpg",
+  "photos": [
+    {
+      "filename": "001.jpg",
+      "caption": "Shinjuku at 3am",
+      "dateTaken": "2025-01-08"
+    },
+    {
+      "filename": "002.jpg",
+      "caption": "Snow on Senso-ji",
+      "dateTaken": "2025-01-08"
+    },
+    {
+      "filename": "003.jpg",
+      "caption": "Ramen bar, steam rising",
+      "dateTaken": "2025-01-09"
+    },
+    {
+      "filename": "004.jpg",
+      "caption": "Harajuku underpass",
+      "dateTaken": "2025-01-09"
+    },
+    {
+      "filename": "005.jpg",
+      "caption": "Meiji Jingu, misty morning",
+      "dateTaken": "2025-01-10"
+    },
+    {
+      "filename": "006.jpg",
+      "caption": "Shibuya crossing, wide",
+      "dateTaken": "2025-01-10"
+    },
+    {
+      "filename": "007.jpg",
+      "caption": "Tokyo Tower in purple dusk",
+      "dateTaken": "2025-01-11"
+    },
+    {
+      "filename": "008.jpg",
+      "caption": "Tsukiji market dawn",
+      "dateTaken": "2025-01-11"
+    }
+  ],
+  "totalPhotos": 8
+}

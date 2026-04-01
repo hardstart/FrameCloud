@@ -1,0 +1,73 @@
+{
+  "title": "Hong Kong — March 2026",
+  "slug": "hong-kong-march-2026",
+  "date": "2026-03-15",
+  "description": "A week in Hong Kong with family.",
+  "photographer": "Hardy Rajput",
+  "passwordHash": "$2a$10$8GRlkSWKfCMUSpDU00ngoelSLeHpo6YB1hqQw.hXydTfuZ1hDk3Dy",
+  "isPasswordProtected": true,
+  "coverImage": "cover.jpg",
+  "photos": [
+    {
+      "filename": "001.jpg",
+      "caption": "Victoria Harbour at dawn",
+      "dateTaken": "2026-03-15"
+    },
+    {
+      "filename": "002.jpg",
+      "caption": "Street market, Mong Kok",
+      "dateTaken": "2026-03-15"
+    },
+    {
+      "filename": "003.jpg",
+      "caption": "Tram through Central",
+      "dateTaken": "2026-03-15"
+    },
+    {
+      "filename": "004.jpg",
+      "caption": "Temple Street at night",
+      "dateTaken": "2026-03-16"
+    },
+    {
+      "filename": "005.jpg",
+      "caption": "Star Ferry crossing",
+      "dateTaken": "2026-03-16"
+    },
+    {
+      "filename": "006.jpg",
+      "caption": "Bamboo scaffolding",
+      "dateTaken": "2026-03-16"
+    },
+    {
+      "filename": "007.jpg",
+      "caption": "Neon signs, Tsim Sha Tsui",
+      "dateTaken": "2026-03-17"
+    },
+    {
+      "filename": "008.jpg",
+      "caption": "Morning tai chi in the park",
+      "dateTaken": "2026-03-17"
+    },
+    {
+      "filename": "009.jpg",
+      "caption": "Dim sum spread",
+      "dateTaken": "2026-03-17"
+    },
+    {
+      "filename": "010.jpg",
+      "caption": "Peak Tram ascent",
+      "dateTaken": "2026-03-18"
+    },
+    {
+      "filename": "011.jpg",
+      "caption": "Typhoon shelter boats",
+      "dateTaken": "2026-03-18"
+    },
+    {
+      "filename": "012.jpg",
+      "caption": "Wan Chai market stalls",
+      "dateTaken": "2026-03-18"
+    }
+  ],
+  "totalPhotos": 12
+}

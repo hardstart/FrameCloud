@@ -1,0 +1,63 @@
+{
+  "title": "Paris — Summer 2025",
+  "slug": "paris-summer-2025",
+  "date": "2025-07-14",
+  "description": "Golden-hour wandering from Montmartre to the Seine during Bastille Day.",
+  "photographer": "Hardy Rajput",
+  "passwordHash": null,
+  "isPasswordProtected": false,
+  "coverImage": "cover.jpg",
+  "photos": [
+    {
+      "filename": "001.jpg",
+      "caption": "Eiffel from Trocadéro",
+      "dateTaken": "2025-07-14"
+    },
+    {
+      "filename": "002.jpg",
+      "caption": "Café terrace, St-Germain",
+      "dateTaken": "2025-07-14"
+    },
+    {
+      "filename": "003.jpg",
+      "caption": "Bouquinistes along the Seine",
+      "dateTaken": "2025-07-15"
+    },
+    {
+      "filename": "004.jpg",
+      "caption": "Sacré-Cœur at sunset",
+      "dateTaken": "2025-07-15"
+    },
+    {
+      "filename": "005.jpg",
+      "caption": "Marché Bastille",
+      "dateTaken": "2025-07-16"
+    },
+    {
+      "filename": "006.jpg",
+      "caption": "Pont des Arts",
+      "dateTaken": "2025-07-16"
+    },
+    {
+      "filename": "007.jpg",
+      "caption": "Palais Royal garden",
+      "dateTaken": "2025-07-17"
+    },
+    {
+      "filename": "008.jpg",
+      "caption": "Louvre colonnade, golden",
+      "dateTaken": "2025-07-17"
+    },
+    {
+      "filename": "009.jpg",
+      "caption": "Bastille fireworks rehearsal",
+      "dateTaken": "2025-07-18"
+    },
+    {
+      "filename": "010.jpg",
+      "caption": "Rue Mouffetard morning",
+      "dateTaken": "2025-07-18"
+    }
+  ],
+  "totalPhotos": 10
+}

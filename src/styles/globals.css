@@ -1,0 +1,249 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #141414;
+  --bg-camera-body: #2A2A2A;
+  --text-primary: #F5F5F5;
+  --text-secondary: #888888;
+  --text-hud: #FFFFFF;
+  --lcd-bg: #1A1A0A;
+  --lcd-amber: #FFB800;
+  --lcd-green: #00FF66;
+  --lcd-glow: rgba(255, 184, 0, 0.15);
+  --accent-red: #FF0000;
+  --frame-lines: rgba(255, 255, 255, 0.7);
+  --vignette: rgba(0, 0, 0, 0.7);
+  --shutter-black: #000000;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* LCD scanline effect */
+.lcd-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+}
+
+/* LCD pixel grid */
+.lcd-pixel-grid {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 3px 3px;
+  pointer-events: none;
+}
+
+/* Vignette overlay */
+.vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.3) 80%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  pointer-events: none;
+}
+
+/* Blinking cursor for LCD input */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Scrollbar hide */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Shimmer skeleton */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #141414 25%, #1e1e1e 50%, #141414 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ─── Film grain ──────────────────────────────────────────────────────── */
+@keyframes grain {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-4%, -8%); }
+  20%  { transform: translate(-12%, 4%); }
+  30%  { transform: translate(6%, -20%); }
+  40%  { transform: translate(-4%, 20%); }
+  50%  { transform: translate(-14%, 8%); }
+  60%  { transform: translate(12%, 0%); }
+  70%  { transform: translate(0%, 12%); }
+  80%  { transform: translate(4%, 28%); }
+  90%  { transform: translate(-8%, 8%); }
+  100% { transform: translate(0, 0); }
+}
+
+.film-grain-overlay {
+  position: fixed;
+  inset: -100%;
+  width: 300%;
+  height: 300%;
+  pointer-events: none;
+  z-index: 9997;
+  opacity: 0.038;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)'/%3E%3C/svg%3E");
+  animation: grain 0.55s steps(1) infinite;
+}
+
+/* Reduce grain intensity inside viewfinder to not overwhelm photos */
+.viewfinder-context .film-grain-overlay {
+  opacity: 0.02;
+}
+
+/* ─── Exposure data flicker ─────────────────────────────────────────── */
+@keyframes evf-flicker {
+  0%, 100% { opacity: 1; }
+  92%       { opacity: 1; }
+  93%       { opacity: 0.4; }
+  94%       { opacity: 1; }
+  97%       { opacity: 0.7; }
+  98%       { opacity: 1; }
+}
+
+.evf-data {
+  animation: evf-flicker 4s ease-in-out infinite;
+}
+
+/* ─── EVF scanlines — denser than LCD, used inside the viewfinder ──── */
+/* Fine horizontal CRT-style lines at ~50% of LCD density             */
+.evf-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.12) 1px,
+    rgba(0, 0, 0, 0.12) 2px
+  );
+  pointer-events: none;
+}
+
+/* ─── AF lock pulse — brackets flash when focus is acquired ─────── */
+@keyframes af-lock-pulse {
+  0%   { opacity: 1;   transform: translate(-50%, -50%) scale(1.0); }
+  30%  { opacity: 0.5; transform: translate(-50%, -50%) scale(1.08); }
+  60%  { opacity: 1;   transform: translate(-50%, -50%) scale(0.97); }
+  100% { opacity: 1;   transform: translate(-50%, -50%) scale(1.0); }
+}
+
+/* AF bracket container gets this class when focus locks */
+.af-locked {
+  animation: af-lock-pulse 0.22s ease-out forwards;
+}
+
+/* ─── Focus ring glow — subtle amber halo on the 3D eyepiece ─────── */
+@keyframes focus-ring-glow {
+  0%, 100% { opacity: 0.0; }
+  50%       { opacity: 0.15; }
+}
+
+/* ─── Viewfinder glass scanlines ────────────────────────────────────── */
+/* Subtle horizontal lines overlaid on the inner viewfinder opening (ViewfinderTunnel) */
+.viewfinder-glass-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.022) 3px,
+    rgba(0, 0, 0, 0.022) 4px
+  );
+  pointer-events: none;
+}
+
+/* ─── ViewfinderGallery keyframes ───────────────────────────────────── */
+
+/* Simple fade-in — for labels, frame count, CTA, and scroll hint */
+@keyframes vfg-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Fade-in with upward drift — for photo grid thumbnails */
+@keyframes vfg-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);  }
+}
+
+/* ─── Gallery page animations ───────────────────────────────────────── */
+@keyframes hero-reveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Apply to hero children — use inline animation-delay for stagger */
+.hero-animate {
+  opacity: 0;
+  animation: hero-reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Album card 3D tilt ─────────────────────────────────────────────── */
+.card-tilt {
+  will-change: transform;
+  /* transition set in JS for directional control */
+}
+
+/* ─── Sprocket hole (footer decorative strip) ───────────────────────── */
+.sprocket-hole {
+  width: 14px;
+  height: 9px;
+  border-radius: 2px;
+  border: 1px solid rgba(255,255,255,0.15);
+  flex-shrink: 0;
+}
+
+/* ─── Reduced motion ────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Responsive — scale-down grain on small viewports ─────────────── */
+@media (max-width: 480px) {
+  .film-grain-overlay {
+    opacity: 0.025; /* slightly less aggressive on mobile OLED */
+  }
+}
