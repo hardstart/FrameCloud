@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, users } from "@/lib/db";
-import { eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
-import { createSession } from "@/lib/auth/session";
+import { createSupabaseServer } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,22 +9,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email.toLowerCase()))
-      .limit(1);
+    const supabase = createSupabaseServer();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.toLowerCase(),
+      password,
+    });
 
-    if (!user) {
+    if (error) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
-
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
-    }
-
-    await createSession(user.id, user.tenantId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

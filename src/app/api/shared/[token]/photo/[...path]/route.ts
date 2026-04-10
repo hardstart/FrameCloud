@@ -4,11 +4,17 @@ import { eq, and, gt, or, isNull } from "drizzle-orm";
 import { getR2Object } from "@/lib/storage";
 import path from "path";
 
-// Serve photos for shared albums (public, no auth required)
+// Serve photos for shared albums (requires share password auth)
 export async function GET(
   req: NextRequest,
   { params }: { params: { token: string; path: string[] } }
 ) {
+  // Check share auth cookie
+  const authCookie = req.cookies.get(`fc_share_${params.token}`);
+  if (authCookie?.value !== "authenticated") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   // Validate share link
   const [link] = await db
     .select()

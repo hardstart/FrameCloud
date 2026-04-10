@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { db, shareLinks, albums, photos } from "@/lib/db";
 import { eq, and, gt, or, isNull } from "drizzle-orm";
 import SharedAlbumView from "./SharedAlbumView";
+import SharedPasswordGate from "./SharedPasswordGate";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +27,23 @@ export default async function SharedAlbumPage({ params }: Props) {
 
   if (!link) notFound();
 
+  // Check if user has authenticated for this share link
+  const cookieStore = cookies();
+  const authCookie = cookieStore.get(`fc_share_${params.token}`);
+  const isAuthenticated = authCookie?.value === "authenticated";
+
+  if (!isAuthenticated) {
+    // Show password gate
+    const [album] = await db
+      .select({ title: albums.title })
+      .from(albums)
+      .where(eq(albums.id, link.albumId))
+      .limit(1);
+
+    return <SharedPasswordGate token={params.token} albumTitle={album?.title || "Album"} />;
+  }
+
+  // Authenticated — show the album
   const [album] = await db
     .select()
     .from(albums)

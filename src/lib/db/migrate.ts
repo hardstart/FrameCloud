@@ -1,11 +1,11 @@
 /**
  * Run with: npx tsx src/lib/db/migrate.ts
  * Creates all tables if they don't exist.
+ * Requires DATABASE_URL env var (Supabase Postgres connection string).
  */
-import { neon } from "@neondatabase/serverless";
-import "dotenv/config";
+import postgres from "postgres";
 
-const sql = neon(process.env.DATABASE_URL!);
+const sql = postgres(process.env.DATABASE_URL!);
 
 async function migrate() {
   console.log("Running migrations...");
@@ -22,29 +22,17 @@ async function migrate() {
   await sql`
     CREATE TABLE IF NOT EXISTS users (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      auth_id TEXT NOT NULL UNIQUE,
       tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-      email TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
+      email TEXT NOT NULL,
       name TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'owner',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
 
+  await sql`CREATE INDEX IF NOT EXISTS users_auth_idx ON users(auth_id)`;
   await sql`CREATE INDEX IF NOT EXISTS users_tenant_idx ON users(tenant_id)`;
-  await sql`CREATE INDEX IF NOT EXISTS users_email_idx ON users(email)`;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS sessions (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-      expires_at TIMESTAMPTZ NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `;
-
-  await sql`CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions(user_id)`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS albums (
@@ -90,6 +78,7 @@ async function migrate() {
       album_id UUID NOT NULL REFERENCES albums(id) ON DELETE CASCADE,
       tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
       token TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
       is_active BOOLEAN NOT NULL DEFAULT TRUE,
       expires_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -100,6 +89,7 @@ async function migrate() {
   await sql`CREATE INDEX IF NOT EXISTS share_links_album_idx ON share_links(album_id)`;
 
   console.log("Migrations complete!");
+  await sql.end();
 }
 
 migrate().catch(console.error);

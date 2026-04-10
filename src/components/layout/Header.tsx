@@ -63,21 +63,9 @@ export default function Header() {
         </Link>
 
         {/* Right — nav links */}
-        <div className="flex items-center gap-4">
-          <span
-            className="font-mono hidden sm:block"
-            style={{
-              fontSize: 9,
-              letterSpacing: "0.22em",
-              color: "rgba(255,255,255,0.18)",
-              textTransform: "uppercase",
-            }}
-            aria-hidden="true"
-          >
-            Visual Archive
-          </span>
+        <div className="flex items-center gap-5">
           <Link
-            href="/dashboard"
+            href="/login"
             className="font-mono uppercase transition-colors"
             style={{
               fontSize: 9,
@@ -85,7 +73,20 @@ export default function Header() {
               color: "rgba(255,255,255,0.3)",
             }}
           >
-            Dashboard
+            Sign In
+          </Link>
+          <Link
+            href="/signup"
+            className="font-mono uppercase px-4 py-1.5 rounded transition-all"
+            style={{
+              fontSize: 9,
+              letterSpacing: "0.18em",
+              background: "rgba(255,184,0,0.15)",
+              color: "rgba(255,184,0,0.85)",
+              border: "1px solid rgba(255,184,0,0.2)",
+            }}
+          >
+            Get Started
           </Link>
         </div>
       </div>

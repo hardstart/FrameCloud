@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseServer } from "@/lib/supabase/server";
 import { db, users, tenants } from "@/lib/db";
-import { eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
-import { createSession } from "@/lib/auth/session";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,18 +9,27 @@ export async function POST(req: NextRequest) {
     if (!email || !password || !name) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
-
     if (password.length < 8) {
       return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
     }
 
-    // Check if email already exists
-    const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email.toLowerCase())).limit(1);
-    if (existing.length > 0) {
-      return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+    const supabase = createSupabaseServer();
+
+    // Create Supabase auth user
+    const { data, error } = await supabase.auth.signUp({
+      email: email.toLowerCase(),
+      password,
+      options: { data: { name } },
+    });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    if (!data.user) {
+      return NextResponse.json({ error: "Signup failed" }, { status: 500 });
     }
 
-    // Create tenant (slug from name)
+    // Create tenant
     const slug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -34,20 +41,14 @@ export async function POST(req: NextRequest) {
       .values({ name, slug: `${slug}-${Date.now().toString(36)}` })
       .returning({ id: tenants.id });
 
-    // Create user
-    const passwordHash = await bcrypt.hash(password, 10);
-    const [user] = await db
-      .insert(users)
-      .values({
-        tenantId: tenant.id,
-        email: email.toLowerCase(),
-        passwordHash,
-        name,
-        role: "owner",
-      })
-      .returning({ id: users.id });
-
-    await createSession(user.id, tenant.id);
+    // Create user record linked to Supabase auth
+    await db.insert(users).values({
+      authId: data.user.id,
+      tenantId: tenant.id,
+      email: email.toLowerCase(),
+      name,
+      role: "owner",
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -16,38 +16,21 @@ export const tenants = pgTable("tenants", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// ── Users ──────────────────────────────────────────────────────────────
+// ── Users (linked to Supabase Auth) ────────────────────────────────────
 export const users = pgTable(
   "users",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    authId: text("auth_id").notNull().unique(), // Supabase auth.users.id
     tenantId: uuid("tenant_id")
       .notNull()
       .references(() => tenants.id, { onDelete: "cascade" }),
-    email: text("email").notNull().unique(),
-    passwordHash: text("password_hash").notNull(),
+    email: text("email").notNull(),
     name: text("name").notNull(),
-    role: text("role").notNull().default("owner"), // owner | member
+    role: text("role").notNull().default("owner"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("users_tenant_idx").on(t.tenantId), index("users_email_idx").on(t.email)]
-);
-
-// ── Sessions ───────────────────────────────────────────────────────────
-export const sessions = pgTable(
-  "sessions",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    tenantId: uuid("tenant_id")
-      .notNull()
-      .references(() => tenants.id, { onDelete: "cascade" }),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (t) => [index("sessions_user_idx").on(t.userId)]
+  (t) => [index("users_auth_idx").on(t.authId), index("users_tenant_idx").on(t.tenantId)]
 );
 
 // ── Albums ──────────────────────────────────────────────────────────────
@@ -61,7 +44,7 @@ export const albums = pgTable(
     title: text("title").notNull(),
     slug: text("slug").notNull(),
     description: text("description"),
-    coverKey: text("cover_key"), // R2 object key for cover image
+    coverKey: text("cover_key"),
     isPasswordProtected: boolean("is_password_protected").notNull().default(false),
     passwordHash: text("password_hash"),
     photoCount: integer("photo_count").notNull().default(0),
@@ -86,7 +69,7 @@ export const photos = pgTable(
       .notNull()
       .references(() => tenants.id, { onDelete: "cascade" }),
     filename: text("filename").notNull(),
-    r2Key: text("r2_key").notNull(), // full R2 object key
+    r2Key: text("r2_key").notNull(),
     caption: text("caption"),
     sortOrder: integer("sort_order").notNull().default(0),
     width: integer("width"),
@@ -112,6 +95,7 @@ export const shareLinks = pgTable(
       .notNull()
       .references(() => tenants.id, { onDelete: "cascade" }),
     token: text("token").notNull().unique(),
+    passwordHash: text("password_hash").notNull(),
     isActive: boolean("is_active").notNull().default(true),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -125,7 +109,6 @@ export const shareLinks = pgTable(
 // ── Type helpers ────────────────────────────────────────────────────────
 export type Tenant = typeof tenants.$inferSelect;
 export type User = typeof users.$inferSelect;
-export type Session = typeof sessions.$inferSelect;
 export type Album = typeof albums.$inferSelect;
 export type Photo = typeof photos.$inferSelect;
 export type ShareLink = typeof shareLinks.$inferSelect;

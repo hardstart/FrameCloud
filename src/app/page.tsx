@@ -1,44 +1,19 @@
+import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import GalleryGrid from "@/components/gallery/GalleryGrid";
-import { listAlbumSlugs, getAlbumManifest } from "@/lib/r2";
-import type { AlbumPublicMeta } from "@/lib/types";
+import FilmStrip from "@/components/layout/FilmStrip";
 
-export const dynamic = "force-dynamic";
-
-const SPROCKET_COUNT = 14;
-
-export default async function GalleryPage() {
-  const slugs = await listAlbumSlugs();
-  const albums: AlbumPublicMeta[] = [];
-
-  for (const slug of slugs) {
-    const manifest = await getAlbumManifest(slug);
-    if (!manifest) continue;
-    albums.push({
-      slug:                manifest.slug,
-      title:               manifest.title,
-      date:                manifest.date,
-      coverImage:          `/api/image/${manifest.slug}/${manifest.coverImage}`,
-      totalPhotos:         manifest.totalPhotos,
-      isPasswordProtected: manifest.isPasswordProtected,
-      description:         manifest.description,
-    });
-  }
-
-  albums.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
+export default function LandingPage() {
   return (
     <main className="min-h-screen" style={{ background: "#0A0A0A" }}>
       <Header />
 
       {/* ── Hero ───────────────────────────────────────────────────── */}
       <section
-        className="relative flex flex-col justify-end overflow-hidden"
+        className="relative flex flex-col justify-center overflow-hidden"
         style={{ minHeight: "100svh", paddingTop: 80 }}
-        aria-label="FrameCloud — visual archive"
       >
-        {/* Film grain — animated */}
+        {/* Film grain */}
         <div
           className="absolute inset-0 pointer-events-none"
           aria-hidden="true"
@@ -48,7 +23,7 @@ export default async function GalleryPage() {
           }}
         />
 
-        {/* Warm amber gradient — bottom-left */}
+        {/* Warm amber gradient */}
         <div
           className="absolute inset-0 pointer-events-none"
           aria-hidden="true"
@@ -58,7 +33,7 @@ export default async function GalleryPage() {
           }}
         />
 
-        {/* Vertical frame number strip — right edge */}
+        {/* Frame numbers — right edge */}
         <div
           className="absolute right-5 sm:right-9 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:flex flex-col items-center gap-4"
           aria-hidden="true"
@@ -81,22 +56,15 @@ export default async function GalleryPage() {
         </div>
 
         {/* Hero content */}
-        <div className="relative px-6 sm:px-10 lg:px-14 pb-10 max-w-[1400px] mx-auto w-full">
+        <div className="relative px-6 sm:px-10 lg:px-14 max-w-[1400px] mx-auto w-full">
           {/* Roll indicator */}
-          <div
-            className="hero-animate flex items-center gap-3 mb-8"
-            style={{ animationDelay: "0.05s" }}
-          >
+          <div className="hero-animate flex items-center gap-3 mb-8" style={{ animationDelay: "0.05s" }}>
             <div style={{ width: 28, height: 1, background: "rgba(255,184,0,0.5)" }} />
             <span
               className="font-mono uppercase"
-              style={{
-                fontSize: 9,
-                letterSpacing: "0.32em",
-                color: "rgba(255,184,0,0.55)",
-              }}
+              style={{ fontSize: 9, letterSpacing: "0.32em", color: "rgba(255,184,0,0.55)" }}
             >
-              Roll No. 001 ◆ FrameCloud
+              Cinematic Photo Sharing ◆ FrameCloud
             </span>
           </div>
 
@@ -105,7 +73,7 @@ export default async function GalleryPage() {
             className="hero-animate font-sans font-semibold text-white"
             style={{
               animationDelay: "0.15s",
-              fontSize: "clamp(4rem, 14vw, 13rem)",
+              fontSize: "clamp(3.5rem, 12vw, 11rem)",
               lineHeight: 0.88,
               letterSpacing: "-0.03em",
               marginBottom: "clamp(1.75rem, 4vw, 3.5rem)",
@@ -114,167 +82,151 @@ export default async function GalleryPage() {
             FrameCloud
           </h1>
 
-          {/* Divider + tagline */}
-          <div
-            className="hero-animate flex items-center gap-5"
-            style={{ animationDelay: "0.3s" }}
-          >
-            <div
-              style={{
-                width: 52,
-                height: 1,
-                background: "rgba(255,255,255,0.2)",
-                flexShrink: 0,
-              }}
-            />
+          {/* Tagline */}
+          <div className="hero-animate flex items-center gap-5" style={{ animationDelay: "0.3s" }}>
+            <div style={{ width: 52, height: 1, background: "rgba(255,255,255,0.2)", flexShrink: 0 }} />
             <p
               className="font-mono uppercase"
-              style={{
-                fontSize: 10,
-                letterSpacing: "0.24em",
-                color: "rgba(255,255,255,0.38)",
-              }}
+              style={{ fontSize: 10, letterSpacing: "0.24em", color: "rgba(255,255,255,0.38)" }}
             >
-              A Visual Archive
+              Your photos. Your rolls. Shared cinematically.
             </p>
           </div>
 
-          {/* Stats row */}
-          <div
-            className="hero-animate flex items-center gap-6 mt-10"
-            style={{ animationDelay: "0.42s" }}
+          {/* Description */}
+          <p
+            className="hero-animate font-sans max-w-lg mt-8"
+            style={{
+              animationDelay: "0.42s",
+              fontSize: 16,
+              lineHeight: 1.7,
+              color: "rgba(255,255,255,0.45)",
+            }}
           >
-            <div className="flex items-center gap-2">
-              <span
-                className="font-mono tabular-nums"
-                style={{ fontSize: 22, fontWeight: 600, color: "rgba(255,184,0,0.75)", lineHeight: 1 }}
-              >
-                {albums.length}
-              </span>
-              <span
-                className="font-mono uppercase"
-                style={{ fontSize: 8, letterSpacing: "0.2em", color: "rgba(255,255,255,0.22)" }}
-              >
-                {albums.length === 1 ? "Roll" : "Rolls"}
-              </span>
-            </div>
-            <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.08)" }} />
-            <div className="flex items-center gap-2">
-              <span
-                className="font-mono tabular-nums"
-                style={{ fontSize: 22, fontWeight: 600, color: "rgba(255,255,255,0.55)", lineHeight: 1 }}
-              >
-                {albums.reduce((sum, a) => sum + a.totalPhotos, 0)}
-              </span>
-              <span
-                className="font-mono uppercase"
-                style={{ fontSize: 8, letterSpacing: "0.2em", color: "rgba(255,255,255,0.22)" }}
-              >
-                Frames
-              </span>
-            </div>
-          </div>
+            Create private photo albums, upload your frames, and share them
+            through password-protected links — all wrapped in a cinematic
+            camera viewfinder experience.
+          </p>
 
-          {/* Scroll hint */}
-          <div
-            className="hero-animate flex items-center gap-3 mt-10"
-            style={{ animationDelay: "0.58s" }}
-          >
-            <span
-              className="font-mono uppercase"
+          {/* CTA buttons */}
+          <div className="hero-animate flex items-center gap-4 mt-10" style={{ animationDelay: "0.55s" }}>
+            <Link
+              href="/signup"
+              className="inline-block font-mono uppercase px-7 py-3 rounded transition-all"
               style={{
-                fontSize: 8,
-                letterSpacing: "0.3em",
-                color: "rgba(255,255,255,0.18)",
+                fontSize: 10,
+                letterSpacing: "0.22em",
+                background: "rgba(255,184,0,0.2)",
+                color: "rgba(255,184,0,0.95)",
+                border: "1px solid rgba(255,184,0,0.3)",
               }}
             >
-              Scroll
-            </span>
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="rgba(255,255,255,0.18)"
-              strokeWidth="1.5"
-              aria-hidden="true"
+              Get Started
+            </Link>
+            <Link
+              href="/login"
+              className="inline-block font-mono uppercase px-7 py-3 rounded transition-all"
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.22em",
+                color: "rgba(255,255,255,0.4)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
             >
-              <path d="M12 5v14M19 12l-7 7-7-7" />
-            </svg>
+              Sign In
+            </Link>
           </div>
         </div>
 
-        {/* Film strip separator — bottom of hero */}
-        <div
-          className="relative w-full pointer-events-none"
-          aria-hidden="true"
-          style={{ background: "#050505", borderTop: "1px solid rgba(255,255,255,0.05)" }}
-        >
-          {/* Top sprocket row */}
-          <div className="flex items-center justify-between px-6 pt-2.5 pb-1">
-            {Array.from({ length: SPROCKET_COUNT }).map((_, i) => (
-              <div key={i} className="sprocket-hole" />
-            ))}
-          </div>
-
-          {/* Film data stripe */}
-          <div
-            className="flex items-center gap-8 px-6 py-1"
-            style={{
-              background: "rgba(255,184,0,0.025)",
-              borderTop: "1px solid rgba(255,184,0,0.07)",
-              borderBottom: "1px solid rgba(255,184,0,0.07)",
-            }}
-          >
-            <span
-              className="font-mono"
-              style={{ fontSize: 7, letterSpacing: "0.26em", color: "rgba(255,184,0,0.28)", textTransform: "uppercase" }}
-            >
-              FRAMECLOUD 200 ◆ 135-36
-            </span>
-            <span
-              className="font-mono"
-              style={{ fontSize: 7, letterSpacing: "0.26em", color: "rgba(255,255,255,0.12)", textTransform: "uppercase" }}
-            >
-              DX ◆ ISO 200/24°
-            </span>
-          </div>
-
-          {/* Bottom sprocket row */}
-          <div className="flex items-center justify-between px-6 pt-1 pb-2.5">
-            {Array.from({ length: SPROCKET_COUNT }).map((_, i) => (
-              <div key={i} className="sprocket-hole" />
-            ))}
-          </div>
+        {/* Film strip separator */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <FilmStrip />
         </div>
       </section>
 
-      {/* ── Archive ─────────────────────────────────────────────────── */}
-      <section
-        className="px-6 sm:px-10 lg:px-14 pb-24 pt-14 max-w-[1400px] mx-auto"
-        aria-label="Photo albums"
-      >
+      {/* ── Features ──────────────────────────────────────────────── */}
+      <section className="px-6 sm:px-10 lg:px-14 py-24 max-w-[1400px] mx-auto">
         {/* Section header */}
-        <div className="flex items-center gap-4 mb-10 sm:mb-12">
-          <div
-            style={{
-              width: 5,
-              height: 5,
-              borderRadius: "50%",
-              background: "rgba(255,184,0,0.6)",
-              flexShrink: 0,
-            }}
-          />
+        <div className="flex items-center gap-4 mb-16">
+          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(255,184,0,0.6)", flexShrink: 0 }} />
           <span
             className="font-mono uppercase"
             style={{ fontSize: 8, letterSpacing: "0.3em", color: "rgba(255,255,255,0.3)" }}
           >
-            Archive — {albums.length} {albums.length === 1 ? "roll" : "rolls"}
+            How It Works
           </span>
           <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.05)" }} />
         </div>
 
-        <GalleryGrid albums={albums} />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 sm:gap-8">
+          {[
+            {
+              number: "01",
+              title: "Create Your Rolls",
+              desc: "Sign up and create albums. Organize your photos into rolls — each one gets its own cinematic viewer.",
+            },
+            {
+              number: "02",
+              title: "Upload Frames",
+              desc: "Drag and drop your photos. They're stored securely in the cloud and served fast from the edge.",
+            },
+            {
+              number: "03",
+              title: "Share with a Link",
+              desc: "Generate a password-protected share link for any album. Recipients view your photos through the camera viewfinder experience.",
+            },
+          ].map((feature) => (
+            <div key={feature.number}>
+              <span
+                className="font-mono block mb-4"
+                style={{ fontSize: 28, fontWeight: 600, color: "rgba(255,184,0,0.2)", lineHeight: 1 }}
+              >
+                {feature.number}
+              </span>
+              <h3
+                className="font-sans font-medium mb-3"
+                style={{ fontSize: 17, color: "#F5F5F5" }}
+              >
+                {feature.title}
+              </h3>
+              <p
+                className="font-mono"
+                style={{ fontSize: 12, lineHeight: 1.7, color: "rgba(255,255,255,0.35)" }}
+              >
+                {feature.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Bottom CTA ────────────────────────────────────────────── */}
+      <section className="px-6 sm:px-10 lg:px-14 pb-24 max-w-[1400px] mx-auto text-center">
+        <div
+          className="rounded-lg py-16 px-8"
+          style={{ background: "#111", border: "1px solid rgba(255,255,255,0.04)" }}
+        >
+          <div className="font-mono mb-3" style={{ fontSize: 32, color: "rgba(255,184,0,0.15)" }}>◆</div>
+          <h2 className="font-sans font-semibold mb-3" style={{ fontSize: 24, color: "#F5F5F5" }}>
+            Start shooting
+          </h2>
+          <p className="font-mono mb-8 mx-auto max-w-md" style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.7 }}>
+            Create your free account and upload your first roll in under a minute.
+          </p>
+          <Link
+            href="/signup"
+            className="inline-block font-mono uppercase px-8 py-3 rounded transition-all"
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.22em",
+              background: "rgba(255,184,0,0.2)",
+              color: "rgba(255,184,0,0.95)",
+              border: "1px solid rgba(255,184,0,0.3)",
+            }}
+          >
+            Create Account
+          </Link>
+        </div>
       </section>
 
       <Footer />

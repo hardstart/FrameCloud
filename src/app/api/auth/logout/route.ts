@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { destroySession } from "@/lib/auth/session";
+import { createSupabaseServer } from "@/lib/supabase/server";
 
 export async function POST() {
-  await destroySession();
+  const supabase = createSupabaseServer();
+  await supabase.auth.signOut();
   return NextResponse.json({ success: true });
 }

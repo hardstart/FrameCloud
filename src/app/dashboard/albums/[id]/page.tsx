@@ -19,6 +19,9 @@ export default function AlbumDetailPage() {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [showShareForm, setShowShareForm] = useState(false);
+  const [sharePassword, setSharePassword] = useState("");
+  const [creatingLink, setCreatingLink] = useState(false);
 
   const fetchAlbum = useCallback(async () => {
     const res = await fetch(`/api/dashboard/albums/${id}`);
@@ -72,13 +75,22 @@ export default function AlbumDetailPage() {
     fetchAlbum();
   }
 
-  async function handleCreateShareLink() {
+  async function handleCreateShareLink(e: React.FormEvent) {
+    e.preventDefault();
+    if (!sharePassword || sharePassword.length < 4) return;
+    setCreatingLink(true);
+
     const res = await fetch("/api/dashboard/share", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ albumId: id }),
+      body: JSON.stringify({ albumId: id, password: sharePassword }),
     });
-    if (res.ok) fetchAlbum();
+    if (res.ok) {
+      setSharePassword("");
+      setShowShareForm(false);
+      fetchAlbum();
+    }
+    setCreatingLink(false);
   }
 
   async function handleRevokeShareLink(linkId: string) {
@@ -200,7 +212,7 @@ export default function AlbumDetailPage() {
         {/* Share section */}
         <div className="flex items-center gap-3">
           <button
-            onClick={handleCreateShareLink}
+            onClick={() => setShowShareForm(!showShareForm)}
             className="font-mono uppercase px-3 py-1.5 rounded transition-all"
             style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
@@ -208,6 +220,51 @@ export default function AlbumDetailPage() {
           </button>
         </div>
       </div>
+
+      {/* Share link creation form */}
+      {showShareForm && (
+        <div className="mb-6 p-4 rounded-lg" style={{ background: "#141414", border: "1px solid rgba(255,184,0,0.1)" }}>
+          <form onSubmit={handleCreateShareLink} className="flex items-end gap-3">
+            <div className="flex-1">
+              <label className="block font-mono uppercase mb-2" style={{ fontSize: 9, letterSpacing: "0.2em", color: "rgba(255,255,255,0.35)" }}>
+                Set Password for Share Link
+              </label>
+              <input
+                type="text"
+                value={sharePassword}
+                onChange={(e) => setSharePassword(e.target.value)}
+                required
+                minLength={4}
+                className="w-full px-4 py-2.5 rounded font-mono outline-none"
+                style={{ fontSize: 13, background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.08)", color: "#F5F5F5" }}
+                placeholder="Min. 4 characters"
+                autoFocus
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={creatingLink || sharePassword.length < 4}
+              className="font-mono uppercase px-5 py-2.5 rounded transition-all flex-shrink-0"
+              style={{
+                fontSize: 9, letterSpacing: "0.15em",
+                background: "rgba(255,184,0,0.2)", color: "rgba(255,184,0,0.9)",
+                border: "1px solid rgba(255,184,0,0.25)",
+                opacity: sharePassword.length < 4 ? 0.5 : 1,
+              }}
+            >
+              {creatingLink ? "Creating..." : "Create Link"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowShareForm(false); setSharePassword(""); }}
+              className="font-mono uppercase px-4 py-2.5 rounded transition-all flex-shrink-0"
+              style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.3)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              Cancel
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Active share links */}
       {shareLinks.length > 0 && (

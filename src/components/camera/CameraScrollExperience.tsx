@@ -131,11 +131,12 @@ export default function CameraScrollExperience({
   const scrollAccBrowseRef  = useRef(0);
 
   // ── Shared refs ────────────────────────────────────────────────────
-  const completeRef   = useRef(false);
-  const sound25Fired  = useRef(false);
-  const sound60Fired  = useRef(false);
-  const sound72Fired  = useRef(false);
-  const audioCtxRef   = useRef<AudioContext | null>(null);
+  const completeRef        = useRef(false);
+  const sound25Fired       = useRef(false);
+  const sound60Fired       = useRef(false);
+  const sound72Fired       = useRef(false);
+  const audioCtxRef        = useRef<AudioContext | null>(null);
+  const returnToScrubRef   = useRef(false);
 
   const imageUrls = photos.map((p) => `/api/image/${slug}/${p.filename}`);
   useImagePreloader(imageUrls, currentIndex, 2);
@@ -176,7 +177,20 @@ export default function CameraScrollExperience({
             onComplete: () => { isTransitioningRef.current = false; } });
           return;
         }
-        if (currentIndex <= 0) return;
+        if (currentIndex <= 0) {
+          // Scroll back past first photo → return to camera scrub
+          isTransitioningRef.current = true;
+          returnToScrubRef.current = true;
+          // Keep completeRef true so ScrollTrigger at p≈1.0 won't re-enter browse
+          completeRef.current = true;
+          sound25Fired.current = true;
+          sound60Fired.current = true;
+          sound72Fired.current = true;
+          setCurrentIndex(0);
+          setImageLoaded(false);
+          setBrowsing(false);
+          return;
+        }
       }
 
       isTransitioningRef.current = true;
@@ -275,12 +289,22 @@ export default function CameraScrollExperience({
 
       if (!wrapper) return;
 
+      // ── Returning from browse → start at bottom (video last frame)
+      const isReturning = returnToScrubRef.current;
+      if (isReturning) {
+        returnToScrubRef.current = false;
+        window.scrollTo({ top: wrapper.scrollHeight, behavior: "instant" as ScrollBehavior });
+        isTransitioningRef.current = false;
+      }
+
       // ── Initial states ──────────────────────────────────────────
       if (video)      video.style.opacity = "1";
-      if (vignette)   gsap.set(vignette,   { opacity: 0 });
-      if (exposure)   gsap.set(exposure,   { opacity: 0 });
-      if (afBrackets) gsap.set(afBrackets, { opacity: 0, width: 180, height: 180 });
-      if (lensFlare)  gsap.set(lensFlare,  { opacity: 0, scale: 0.5 });
+      if (!isReturning) {
+        if (vignette)   gsap.set(vignette,   { opacity: 0 });
+        if (exposure)   gsap.set(exposure,   { opacity: 0 });
+        if (afBrackets) gsap.set(afBrackets, { opacity: 0, width: 180, height: 180 });
+        if (lensFlare)  gsap.set(lensFlare,  { opacity: 0, scale: 0.5 });
+      }
 
       const ctx = gsap.context(() => {
         const tl = gsap.timeline({
@@ -302,7 +326,7 @@ export default function CameraScrollExperience({
                 const vigT    = Math.max(0, Math.min(1, (p - 0.40) / 0.50));
                 const hole    = Math.max(5, 68 - vigT * 63);
                 const feather = Math.max(2, hole - 15);
-                const mask    = `radial-gradient(circle at 38% 36%, transparent ${feather}%, black ${hole}%)`;
+                const mask    = `radial-gradient(circle at 46% 37%, transparent ${feather}%, black ${hole}%)`;
                 vignette.style.maskImage = mask;
                 (vignette.style as CSSStyleDeclaration & { webkitMaskImage: string }).webkitMaskImage = mask;
               }
@@ -361,6 +385,11 @@ export default function CameraScrollExperience({
                 sound72Fired.current = true;
                 if (!audioCtxRef.current) audioCtxRef.current = createAudioCtx();
                 if (audioCtxRef.current) playShutterClick(audioCtxRef.current);
+              }
+
+              // ── Reset complete flag when scrolling back up ────
+              if (p < 0.95 && completeRef.current) {
+                completeRef.current = false;
               }
 
               // ── Enter browse phase ────────────────────────────
@@ -552,9 +581,9 @@ export default function CameraScrollExperience({
             background: "black",
             willChange: "opacity, mask-image",
             maskImage:
-              "radial-gradient(circle at 38% 36%, transparent 68%, black 70%)",
+              "radial-gradient(circle at 46% 37%, transparent 68%, black 70%)",
             WebkitMaskImage:
-              "radial-gradient(circle at 38% 36%, transparent 68%, black 70%)",
+              "radial-gradient(circle at 46% 37%, transparent 68%, black 70%)",
           } as React.CSSProperties}
         />
 
@@ -565,45 +594,13 @@ export default function CameraScrollExperience({
           style={{ zIndex: 11, opacity: 0.035 }}
         />
 
-        {/* AF focus brackets */}
-        <div
-          ref={afBracketsRef}
-          className="fixed pointer-events-none"
-          aria-hidden="true"
-          style={{ zIndex: 20, left: "38%", top: "36%",
-            transform: "translate(-50%, -50%)",
-            width: 180, height: 180, opacity: 0 }}
-        >
-          <div className="af-corner absolute top-0 left-0"
-            style={{ width: "28%", height: "28%",
-              borderTop:  "1.5px solid rgba(255,184,0,0.8)",
-              borderLeft: "1.5px solid rgba(255,184,0,0.8)" }} />
-          <div className="af-corner absolute top-0 right-0"
-            style={{ width: "28%", height: "28%",
-              borderTop:   "1.5px solid rgba(255,184,0,0.8)",
-              borderRight: "1.5px solid rgba(255,184,0,0.8)" }} />
-          <div className="af-corner absolute bottom-0 left-0"
-            style={{ width: "28%", height: "28%",
-              borderBottom: "1.5px solid rgba(255,184,0,0.8)",
-              borderLeft:   "1.5px solid rgba(255,184,0,0.8)" }} />
-          <div className="af-corner absolute bottom-0 right-0"
-            style={{ width: "28%", height: "28%",
-              borderBottom: "1.5px solid rgba(255,184,0,0.8)",
-              borderRight:  "1.5px solid rgba(255,184,0,0.8)" }} />
-          <div className="af-dot absolute"
-            style={{ top: "50%", left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 4, height: 4, borderRadius: "50%",
-              background: "rgba(255,184,0,0.6)" }} />
-        </div>
-
         {/* Lens flare */}
         <div
           ref={lensFlareRef}
           className="fixed pointer-events-none"
           aria-hidden="true"
           style={{
-            zIndex: 15, left: "38%", top: "36%",
+            zIndex: 15, left: "46%", top: "37%",
             transform: "translate(-50%, -50%)",
             width: 90, height: 90, borderRadius: "50%",
             background:
