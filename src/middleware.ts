@@ -13,6 +13,7 @@ const PUBLIC_PATHS = [
   "/api/image",
   "/shared",
   "/api/shared",
+  "/api/health",
 ];
 
 export async function middleware(req: NextRequest) {
