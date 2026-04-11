@@ -15,6 +15,9 @@ interface CameraScrollExperienceProps {
   photos: Photo[];
   totalPhotos: number;
   slug: string;
+  getImageUrl?: (photo: Photo, slug: string) => string;
+  backHref?: string;
+  backLabel?: string;
 }
 
 // ─── Web Audio synth helpers ──────────────────────────────────────────
@@ -98,11 +101,18 @@ function playShutterClick(ctx: AudioContext) {
  * swap in behind the EVF overlays (ViewfinderOverlay + HUD).
  * Scroll/swipe/keyboard navigates between frames.
  */
+function defaultGetImageUrl(photo: Photo, slug: string) {
+  return `/api/image/${slug}/${photo.filename}`;
+}
+
 export default function CameraScrollExperience({
   albumTitle,
   photos,
   totalPhotos,
   slug,
+  getImageUrl = defaultGetImageUrl,
+  backHref = "/",
+  backLabel = "Back to Gallery",
 }: CameraScrollExperienceProps) {
   // ── Browse phase state ─────────────────────────────────────────────
   const [browsing, setBrowsing]       = useState(false);
@@ -138,7 +148,7 @@ export default function CameraScrollExperience({
   const audioCtxRef        = useRef<AudioContext | null>(null);
   const returnToScrubRef   = useRef(false);
 
-  const imageUrls = photos.map((p) => `/api/image/${slug}/${p.filename}`);
+  const imageUrls = photos.map((p) => getImageUrl(p, slug));
   useImagePreloader(imageUrls, currentIndex, 2);
 
   // ── Body scroll lock when browsing ────────────────────────────────
@@ -494,11 +504,11 @@ export default function CameraScrollExperience({
               {totalPhotos} frames
             </p>
             <Link
-              href="/"
+              href={backHref}
               className="font-mono text-[10px] sm:text-xs text-white/60 uppercase tracking-wider hover:text-white transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
-              &larr; Back to Gallery
+              &larr; {backLabel}
             </Link>
           </div>
         )}

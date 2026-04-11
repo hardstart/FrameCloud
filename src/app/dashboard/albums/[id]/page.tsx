@@ -199,6 +199,19 @@ export default function AlbumDetailPage() {
 
           {!editing && (
             <div className="flex gap-2 flex-shrink-0">
+              {photos.length > 0 && (
+                <button
+                  onClick={() => router.push(`/dashboard/albums/${id}/view`)}
+                  className="font-mono uppercase px-3 py-1.5 rounded transition-all"
+                  style={{
+                    fontSize: 9, letterSpacing: "0.15em",
+                    background: "rgba(255,184,0,0.15)", color: "rgba(255,184,0,0.9)",
+                    border: "1px solid rgba(255,184,0,0.2)",
+                  }}
+                >
+                  ▶ View
+                </button>
+              )}
               <button
                 onClick={() => setEditing(true)}
                 className="font-mono uppercase px-3 py-1.5 rounded transition-all"
