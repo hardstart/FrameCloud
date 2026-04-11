@@ -41,8 +41,8 @@ export default function AlbumDetailPage() {
   useEffect(() => { fetchAlbum(); }, [fetchAlbum]);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
-    if (!files?.length) return;
+    if (!e.target.files?.length) return;
+    const files = Array.from(e.target.files);
 
     const total = files.length;
     setUploading(true);
