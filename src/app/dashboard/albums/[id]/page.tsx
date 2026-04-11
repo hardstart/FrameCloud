@@ -15,6 +15,9 @@ export default function AlbumDetailPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
+  const [uploadCurrent, setUploadCurrent] = useState(0);
+  const [uploadTotal, setUploadTotal] = useState(0);
+  const [uploadFailed, setUploadFailed] = useState(0);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -40,22 +43,52 @@ export default function AlbumDetailPage() {
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files?.length) return;
-    setUploading(true);
-    setUploadProgress(`Uploading ${files.length} file(s)...`);
 
-    const formData = new FormData();
-    formData.append("albumId", id);
-    for (let i = 0; i < files.length; i++) {
+    const total = files.length;
+    setUploading(true);
+    setUploadTotal(total);
+    setUploadCurrent(0);
+    setUploadFailed(0);
+    setUploadProgress(`Uploading 0 / ${total}...`);
+
+    let succeeded = 0;
+    let failed = 0;
+
+    for (let i = 0; i < total; i++) {
+      setUploadProgress(`Uploading ${i + 1} / ${total} — ${files[i].name}`);
+      setUploadCurrent(i + 1);
+
+      const formData = new FormData();
+      formData.append("albumId", id);
       formData.append("files", files[i]);
+
+      try {
+        const res = await fetch("/api/dashboard/photos", { method: "POST", body: formData });
+        if (res.ok) {
+          succeeded++;
+        } else {
+          failed++;
+          setUploadFailed(failed);
+        }
+      } catch {
+        failed++;
+        setUploadFailed(failed);
+      }
     }
 
-    const res = await fetch("/api/dashboard/photos", { method: "POST", body: formData });
-    const data = await res.json();
-    setUploadProgress(res.ok ? `Uploaded ${data.count} photo(s)` : "Upload failed");
     setUploading(false);
+    const msg = failed > 0
+      ? `Done — ${succeeded} uploaded, ${failed} failed`
+      : `Done — ${succeeded} photo${succeeded !== 1 ? "s" : ""} uploaded`;
+    setUploadProgress(msg);
     fetchAlbum();
     if (fileInputRef.current) fileInputRef.current.value = "";
-    setTimeout(() => setUploadProgress(""), 3000);
+    setTimeout(() => {
+      setUploadProgress("");
+      setUploadCurrent(0);
+      setUploadTotal(0);
+      setUploadFailed(0);
+    }, 4000);
   }
 
   async function handleDeletePhoto(photoId: string) {
@@ -180,45 +213,79 @@ export default function AlbumDetailPage() {
 
       {/* Upload bar */}
       <div
-        className="mb-6 p-4 rounded-lg flex items-center justify-between"
+        className="mb-6 rounded-lg overflow-hidden"
         style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)" }}
       >
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="font-mono uppercase px-4 py-2 rounded transition-all"
-            style={{
-              fontSize: 9, letterSpacing: "0.18em",
-              background: "rgba(255,184,0,0.15)", color: "rgba(255,184,0,0.9)",
-              border: "1px solid rgba(255,184,0,0.2)",
-            }}
-          >
-            {uploading ? "Uploading..." : "+ Upload Photos"}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleUpload}
-            className="hidden"
-          />
-          {uploadProgress && (
-            <span className="font-mono" style={{ fontSize: 11, color: "rgba(255,184,0,0.6)" }}>{uploadProgress}</span>
-          )}
+        <div className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="font-mono uppercase px-4 py-2 rounded transition-all"
+              style={{
+                fontSize: 9, letterSpacing: "0.18em",
+                background: uploading ? "rgba(255,184,0,0.05)" : "rgba(255,184,0,0.15)",
+                color: uploading ? "rgba(255,184,0,0.4)" : "rgba(255,184,0,0.9)",
+                border: "1px solid rgba(255,184,0,0.2)",
+                cursor: uploading ? "not-allowed" : "pointer",
+              }}
+            >
+              {uploading ? "Uploading..." : "+ Upload Photos"}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleUpload}
+              className="hidden"
+            />
+            {uploadProgress && (
+              <span className="font-mono truncate max-w-[300px]" style={{
+                fontSize: 11,
+                color: uploadFailed > 0 ? "rgba(255,68,68,0.7)" : "rgba(255,184,0,0.6)",
+              }}>
+                {uploadProgress}
+              </span>
+            )}
+          </div>
+
+          {/* Share section */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowShareForm(!showShareForm)}
+              className="font-mono uppercase px-3 py-1.5 rounded transition-all"
+              style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              + Share Link
+            </button>
+          </div>
         </div>
 
-        {/* Share section */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowShareForm(!showShareForm)}
-            className="font-mono uppercase px-3 py-1.5 rounded transition-all"
-            style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            + Share Link
-          </button>
-        </div>
+        {/* Progress bar */}
+        {uploading && uploadTotal > 0 && (
+          <div className="px-4 pb-3">
+            <div className="w-full rounded-full overflow-hidden" style={{ height: 3, background: "rgba(255,255,255,0.06)" }}>
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${(uploadCurrent / uploadTotal) * 100}%`,
+                  background: uploadFailed > 0
+                    ? "linear-gradient(90deg, rgba(255,184,0,0.8), rgba(255,68,68,0.8))"
+                    : "rgba(255,184,0,0.8)",
+                }}
+              />
+            </div>
+            <div className="flex justify-between mt-1.5">
+              <span className="font-mono" style={{ fontSize: 9, color: "rgba(255,255,255,0.2)" }}>
+                {uploadCurrent} of {uploadTotal}
+              </span>
+              <span className="font-mono" style={{ fontSize: 9, color: "rgba(255,255,255,0.2)" }}>
+                {Math.round((uploadCurrent / uploadTotal) * 100)}%
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Share link creation form */}
