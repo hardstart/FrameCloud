@@ -1,0 +1,79 @@
+{
+  "textures": [
+    {
+      "name": "liquid-surface",
+      "file": "liquid-surface.webp",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "tub-wall",
+      "file": "tub-wall.webp",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "film-sprocket-strip",
+      "file": "film-sprocket-strip.webp",
+      "dimensions": [
+        512,
+        2048
+      ]
+    },
+    {
+      "name": "darkroom-env",
+      "file": "darkroom-env.webp",
+      "dimensions": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "name": "wet-print-overlay",
+      "file": "wet-print-overlay.webp",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "photos": [
+    {
+      "name": "photo-01-portrait",
+      "file": "photo-01-portrait.webp"
+    },
+    {
+      "name": "photo-02-cafe",
+      "file": "photo-02-cafe.webp"
+    },
+    {
+      "name": "photo-03-musician",
+      "file": "photo-03-musician.webp"
+    },
+    {
+      "name": "photo-04-car",
+      "file": "photo-04-car.webp"
+    },
+    {
+      "name": "photo-05-field",
+      "file": "photo-05-field.webp"
+    },
+    {
+      "name": "photo-06-tokyo",
+      "file": "photo-06-tokyo.webp"
+    },
+    {
+      "name": "photo-07-flowers",
+      "file": "photo-07-flowers.webp"
+    },
+    {
+      "name": "photo-08-bookshop",
+      "file": "photo-08-bookshop.webp"
+    }
+  ],
+  "generatedAt": "2026-04-11T06:23:49.169Z"
+}
