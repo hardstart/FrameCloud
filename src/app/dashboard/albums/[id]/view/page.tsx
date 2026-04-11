@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
+import dynamic from "next/dynamic";
 import type { Photo as DBPhoto } from "@/lib/db/schema";
 import type { Photo as ViewPhoto } from "@/lib/types";
+import type { DarkroomPhoto } from "@/components/darkroom/useDarkroom";
 
-const CameraScrollExperience = lazy(
-  () => import("@/components/camera/CameraScrollExperience")
+const DarkroomViewer = dynamic(
+  () => import("@/components/darkroom/DarkroomViewer"),
+  { ssr: false }
 );
 
 export default function DashboardAlbumViewPage() {
@@ -49,10 +52,15 @@ export default function DashboardAlbumViewPage() {
     load();
   }, [id, router]);
 
-  function getImageUrl(photo: ViewPhoto) {
-    const r2Key = photoKeys[photo.filename];
-    return `/api/dashboard/photos/serve/${r2Key}`;
-  }
+  // Map album photos to darkroom format with R2 URLs
+  const darkroomPhotos: DarkroomPhoto[] = useMemo(
+    () =>
+      photos.map((p) => ({
+        photoUrl: `/api/dashboard/photos/serve/${photoKeys[p.filename]}`,
+        subject: p.caption || p.filename,
+      })),
+    [photos, photoKeys]
+  );
 
   const content = loading ? (
     <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center">
@@ -73,26 +81,13 @@ export default function DashboardAlbumViewPage() {
       </button>
     </div>
   ) : (
-    <div className="fixed inset-0 z-[200] bg-black overflow-y-auto">
-      <Suspense
-        fallback={
-          <div className="fixed inset-0 bg-black flex items-center justify-center">
-            <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider animate-pulse">
-              Loading viewfinder...
-            </span>
-          </div>
-        }
-      >
-        <CameraScrollExperience
-          slug={id}
-          albumTitle={albumTitle}
-          photos={photos}
-          totalPhotos={photos.length}
-          getImageUrl={getImageUrl}
-          backHref={`/dashboard/albums/${id}`}
-          backLabel="Back to Album"
-        />
-      </Suspense>
+    <div className="fixed inset-0 z-[200] bg-black">
+      <DarkroomViewer
+        photos={darkroomPhotos}
+        albumTitle={albumTitle}
+        backHref={`/dashboard/albums/${id}`}
+        backLabel="Back to Album"
+      />
     </div>
   );
 
