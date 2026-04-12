@@ -45,7 +45,7 @@ export function DarkroomScene({ frames, activeFrame, scrollOffset, onDip }: Dark
         gl={{
           antialias: true,
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 0.65,
+          toneMappingExposure: 0.85,
         }}
         style={{ background: '#060302' }}
         shadows
@@ -98,7 +98,7 @@ function Lighting() {
 
   return (
     <>
-      <ambientLight intensity={0.05} color="#1a0a04" />
+      <ambientLight intensity={0.18} color="#2a1810" />
 
       {/* Red safelight */}
       <pointLight
@@ -112,12 +112,21 @@ function Lighting() {
         shadow-mapSize={[512, 512]}
       />
 
-      {/* Warm fill */}
+      {/* Warm fill — brighter so film frames are more visible */}
       <pointLight
         position={[0, 1, 4]}
-        intensity={0.4}
-        color="#c87830"
-        distance={8}
+        intensity={0.9}
+        color="#d88a40"
+        distance={10}
+        decay={2}
+      />
+
+      {/* Direct film illumination */}
+      <pointLight
+        position={[0, 3, 2]}
+        intensity={0.6}
+        color="#ffd6a0"
+        distance={6}
         decay={2}
       />
 
@@ -130,12 +139,12 @@ function Lighting() {
         decay={2}
       />
 
-      {/* Subtle down light for film frames */}
+      {/* Down light for film frames */}
       <spotLight
         position={[0, 4, 0]}
-        angle={0.5}
-        penumbra={0.8}
-        intensity={0.8}
+        angle={0.6}
+        penumbra={0.7}
+        intensity={1.6}
         color="#ffeedd"
         distance={10}
         castShadow={false}

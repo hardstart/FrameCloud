@@ -123,11 +123,9 @@ function FilmFrame3D({ frame, texture, zPos, isActive, onTap, onMount }: FilmFra
     side: THREE.DoubleSide,
   }), []);
 
-  const photoMat = useMemo(() => new THREE.MeshStandardMaterial({
+  const photoMat = useMemo(() => new THREE.MeshBasicMaterial({
     map: texture,
-    roughness: 0.5,
-    metalness: 0.02,
-    envMapIntensity: 0.2,
+    toneMapped: false,
   }), [texture]);
 
   // Smooth transition for negative to positive
@@ -141,24 +139,17 @@ function FilmFrame3D({ frame, texture, zPos, isActive, onTap, onMount }: FilmFra
 
     photoMat.map = texture;
 
+    // Negative phase: tinted orange and slightly dimmer
+    // Positive phase: full brightness natural color
     if (d < 0.5) {
       const neg = 1 - d * 2;
       photoMat.color.setRGB(
-        0.75 * neg + (1 - neg),
-        0.45 * neg + (1 - neg),
-        0.15 * neg + (1 - neg) * 0.95,
+        1.0 - neg * 0.15,  // slight orange tint
+        0.85 - neg * 0.25,
+        0.70 - neg * 0.40,
       );
-      photoMat.roughness = 0.7;
-      photoMat.envMapIntensity = 0.1;
     } else {
-      const pos = (d - 0.5) * 2;
-      photoMat.color.setRGB(
-        0.7 + pos * 0.3,
-        0.7 + pos * 0.3,
-        0.68 + pos * 0.32,
-      );
-      photoMat.roughness = 0.5 - pos * 0.25;
-      photoMat.envMapIntensity = 0.15 + pos * 0.4;
+      photoMat.color.setRGB(1, 1, 1); // pure white = show texture as-is
     }
     photoMat.needsUpdate = true;
   });
