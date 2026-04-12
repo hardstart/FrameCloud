@@ -58,6 +58,21 @@ export default function DarkroomViewer({ photos, albumTitle, backHref, backLabel
     dipFrame(frameId);
   }, [dipFrame]);
 
+  // Tap the center frame (since R3F events are disabled)
+  const tapRef = useRef({ x: 0, y: 0 });
+  const handleTapStart = useCallback((e: React.PointerEvent) => {
+    tapRef.current = { x: e.clientX, y: e.clientY };
+  }, []);
+  const handleTapEnd = useCallback((e: React.PointerEvent) => {
+    const dx = Math.abs(e.clientX - tapRef.current.x);
+    const dy = Math.abs(e.clientY - tapRef.current.y);
+    if (dx < 10 && dy < 10) {
+      const closestIdx = Math.round(scrollAccum.current);
+      const frame = frames[closestIdx];
+      if (frame) handleDip(frame.id);
+    }
+  }, [frames, handleDip]);
+
   const revealedFrameData = revealedFrame !== null
     ? frames.find(f => f.id === revealedFrame) ?? null
     : null;
@@ -72,14 +87,18 @@ export default function DarkroomViewer({ photos, albumTitle, backHref, backLabel
   }
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100dvh',
-      position: 'relative',
-      overflow: 'hidden',
-      background: '#060302',
-      touchAction: 'none',
-    }}>
+    <div
+      onPointerDown={handleTapStart}
+      onPointerUp={handleTapEnd}
+      style={{
+        width: '100%',
+        height: '100dvh',
+        position: 'relative',
+        overflow: 'hidden',
+        background: '#060302',
+        touchAction: 'none',
+      }}
+    >
       {/* 3D scene */}
       <DarkroomScene
         frames={frames}

@@ -2,7 +2,6 @@
 
 import { useRef, useMemo, useEffect, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import type { FrameState } from './useDarkroom';
@@ -105,7 +104,7 @@ interface FilmFrame3DProps {
   onMount: (el: THREE.Group | null) => void;
 }
 
-function FilmFrame3D({ frame, index, texture, zPos, isActive, onTap, onMount }: FilmFrame3DProps) {
+function FilmFrame3D({ frame, texture, zPos, isActive, onTap, onMount }: FilmFrame3DProps) {
   const groupRef = useRef<THREE.Group>(null);
 
   // Register with parent for dip animation
@@ -114,24 +113,8 @@ function FilmFrame3D({ frame, index, texture, zPos, isActive, onTap, onMount }: 
     return () => onMount(null);
   }, [onMount]);
 
-  // Distinguish tap from scroll
-  const pointerState = useRef({ downX: 0, downY: 0, moved: false });
-
-  const handlePointerDown = useCallback((e: { stopPropagation: () => void; point: THREE.Vector3 }) => {
-    e.stopPropagation();
-    pointerState.current.downX = e.point.x;
-    pointerState.current.downY = e.point.z;
-    pointerState.current.moved = false;
-  }, []);
-
-  const handlePointerUp = useCallback((e: { stopPropagation: () => void; point: THREE.Vector3 }) => {
-    e.stopPropagation();
-    const dx = Math.abs(e.point.x - pointerState.current.downX);
-    const dz = Math.abs(e.point.z - pointerState.current.downY);
-    if (dx < 0.3 && dz < 0.3) {
-      onTap();
-    }
-  }, [onTap]);
+  // Tap handled via DOM overlay in DarkroomViewer
+  void onTap; // keep prop for interface compat
 
   const stripMat = useMemo(() => new THREE.MeshStandardMaterial({
     color: '#1a1008',
@@ -201,8 +184,6 @@ function FilmFrame3D({ frame, index, texture, zPos, isActive, onTap, onMount }: 
     >
       {/* Film base */}
       <mesh
-        onPointerDown={handlePointerDown as any}
-        onPointerUp={handlePointerUp as any}
       >
         <planeGeometry args={[STRIP_W, FRAME_H + 0.5]} />
         <primitive object={stripMat} attach="material" />
@@ -211,8 +192,6 @@ function FilmFrame3D({ frame, index, texture, zPos, isActive, onTap, onMount }: 
       {/* Photo */}
       <mesh
         position={[0, 0, 0.002]}
-        onPointerDown={handlePointerDown as any}
-        onPointerUp={handlePointerUp as any}
       >
         <planeGeometry args={[FRAME_W, FRAME_H]} />
         <primitive object={photoMat} attach="material" />
@@ -226,26 +205,15 @@ function FilmFrame3D({ frame, index, texture, zPos, isActive, onTap, onMount }: 
         </mesh>
       ))}
 
-      {/* Frame number */}
-      <Text
-        position={[-FRAME_W / 2 + 0.15, -FRAME_H / 2 - 0.18, 0.003]}
-        fontSize={0.06}
-        color="#7a5a30"
-        anchorX="left"
-        anchorY="middle"
-      >
-        {`\u2192 ${index + 1}${index % 2 === 0 ? '' : 'A'}`}
-      </Text>
-      <Text
-        position={[FRAME_W / 2 - 0.15, -FRAME_H / 2 - 0.18, 0.003]}
-        fontSize={0.05}
-        color="#7a5a30"
-        anchorX="right"
-        anchorY="middle"
-      >
-        KODAK 5219
-      </Text>
-
+      {/* Frame number dot (decorative, was <Text> but troika conflicts with three 0.178) */}
+      <mesh position={[-FRAME_W / 2 + 0.12, -FRAME_H / 2 - 0.12, 0.003]}>
+        <circleGeometry args={[0.02, 12]} />
+        <meshBasicMaterial color="#7a5a30" />
+      </mesh>
+      <mesh position={[FRAME_W / 2 - 0.12, -FRAME_H / 2 - 0.12, 0.003]}>
+        <circleGeometry args={[0.015, 12]} />
+        <meshBasicMaterial color="#7a5a30" />
+      </mesh>
       {/* Developed indicator */}
       {frame.developed && (
         <mesh position={[0, FRAME_H / 2 + 0.18, 0.003]}>

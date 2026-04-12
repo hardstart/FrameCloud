@@ -1,11 +1,29 @@
 'use client';
 
-import { Suspense, useRef } from 'react';
+import { Suspense, useRef, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { MeshReflectorMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import { FilmStrip3D } from './FilmStrip3D';
 import type { FrameState } from './useDarkroom';
+
+/**
+ * No-op event manager that satisfies R3F 8.x's EventManager interface.
+ * This prevents the "Attempted to assign to readonly property" crash caused
+ * by R3F's pointer event system copying native PointerEvent properties
+ * (which are readonly in Safari/WebKit) when dispatching raycaster events.
+ */
+function noopEvents() {
+  return {
+    priority: 0,
+    enabled: false,
+    compute: () => {},
+    connected: undefined as HTMLElement | undefined,
+    handlers: {} as Record<string, (e: any) => void>,
+    update: () => {},
+    connect: () => {},
+    disconnect: () => {},
+  };
+}
 
 interface DarkroomSceneProps {
   frames: FrameState[];
@@ -31,6 +49,7 @@ export function DarkroomScene({ frames, activeFrame, scrollOffset, onDip }: Dark
         }}
         style={{ background: '#060302' }}
         shadows
+        events={noopEvents as any}
       >
         <Suspense fallback={null}>
           <CameraRig />
@@ -90,8 +109,7 @@ function Lighting() {
         distance={15}
         decay={1.5}
         castShadow
-        shadow-mapSize-width={512}
-        shadow-mapSize-height={512}
+        shadow-mapSize={[512, 512]}
       />
 
       {/* Warm fill */}
@@ -120,7 +138,6 @@ function Lighting() {
         intensity={0.8}
         color="#ffeedd"
         distance={10}
-        target-position={[0, -1, 0]}
         castShadow={false}
       />
     </>
@@ -136,17 +153,15 @@ function Tub() {
 
   return (
     <group position={[0, FLOOR_Y, 0]}>
-      {/* Floor */}
+      {/* Floor — uses standard material instead of MeshReflectorMaterial
+           to avoid readonly-property crash in R3F 8.x event reconciliation */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} raycast={() => {}}>
         <planeGeometry args={[W, L]} />
-        <MeshReflectorMaterial
-          mirror={0.12}
-          resolution={256}
-          mixBlur={8}
-          mixStrength={0.4}
+        <meshStandardMaterial
           color="#080604"
           roughness={0.85}
           metalness={0.05}
+          envMapIntensity={0.12}
         />
       </mesh>
 
@@ -263,20 +278,28 @@ function Liquid({ dipActive }: { dipActive: boolean }) {
 function Particles() {
   const ref = useRef<THREE.Points>(null);
   const count = 80;
-  const positions = new Float32Array(count * 3);
-  const velocities = new Float32Array(count);
 
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 3;
-    positions[i * 3 + 1] = -0.6 - Math.random() * 1.0;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 5;
-    velocities[i] = 0.001 + Math.random() * 0.003;
-  }
+  const { positions, velocities } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const vel = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 3;
+      pos[i * 3 + 1] = -0.6 - Math.random() * 1.0;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 5;
+      vel[i] = 0.001 + Math.random() * 0.003;
+    }
+    return { positions: pos, velocities: vel };
+  }, []);
+
+  const geometry = useMemo(() => {
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return geom;
+  }, [positions]);
 
   useFrame(() => {
-    if (!ref.current) return;
-    const pos = ref.current.geometry.attributes.position;
-    const arr = pos.array as Float32Array;
+    const posAttr = geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
     const t = performance.now() * 0.001;
 
     for (let i = 0; i < count; i++) {
@@ -290,14 +313,11 @@ function Particles() {
         arr[i * 3 + 2] = (Math.random() - 0.5) * 5;
       }
     }
-    pos.needsUpdate = true;
+    posAttr.needsUpdate = true;
   });
 
   return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
-      </bufferGeometry>
+    <points ref={ref} geometry={geometry}>
       <pointsMaterial size={0.02} color="#c89860" transparent opacity={0.2} sizeAttenuation depthWrite={false} />
     </points>
   );

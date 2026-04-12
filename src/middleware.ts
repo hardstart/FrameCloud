@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   "/shared",
   "/api/shared",
   "/api/health",
+  "/darkroom-test",
 ];
 
 export async function middleware(req: NextRequest) {
