@@ -139,17 +139,18 @@ function FilmFrame3D({ frame, texture, zPos, isActive, onTap, onMount }: FilmFra
 
     photoMat.map = texture;
 
-    // Negative phase: tinted orange and slightly dimmer
+    // Negative phase: dark red safelight-tinted (undeveloped film)
     // Positive phase: full brightness natural color
     if (d < 0.5) {
-      const neg = 1 - d * 2;
+      const neg = 1 - d * 2; // 1 when undeveloped, 0 at midpoint
+      // Lerp from (0.3, 0.05, 0.02) → (1, 1, 1)
       photoMat.color.setRGB(
-        1.0 - neg * 0.15,  // slight orange tint
-        0.85 - neg * 0.25,
-        0.70 - neg * 0.40,
+        1 - neg * 0.7,
+        1 - neg * 0.95,
+        1 - neg * 0.98,
       );
     } else {
-      photoMat.color.setRGB(1, 1, 1); // pure white = show texture as-is
+      photoMat.color.setRGB(1, 1, 1); // fully developed = show texture as-is
     }
     photoMat.needsUpdate = true;
   });
