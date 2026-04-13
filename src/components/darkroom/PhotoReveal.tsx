@@ -65,33 +65,39 @@ export function PhotoReveal({ frame, onDismiss }: PhotoRevealProps) {
       <div
         ref={imgRef}
         style={{
-          width: '100%',
-          maxWidth: 420,
+          maxWidth: 'min(92vw, 1100px)',
+          maxHeight: '88vh',
           position: 'relative',
           background: '#f5f2ed',
-          padding: '28px 24px 40px',
+          padding: '32px 28px 52px',
           boxShadow: `
             0 1px 0 rgba(255, 255, 255, 0.06),
-            0 8px 60px rgba(0, 0, 0, 0.5),
-            0 2px 20px rgba(0, 0, 0, 0.3)
+            0 12px 80px rgba(0, 0, 0, 0.55),
+            0 4px 30px rgba(0, 0, 0, 0.35)
           `,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        {/* Inner photo */}
+        {/* Inner photo — preserves aspect ratio, scales to fit viewport */}
         <div style={{
-          width: '100%',
-          aspectRatio: '3 / 4',
           position: 'relative',
           overflow: 'hidden',
+          maxHeight: 'calc(88vh - 84px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={frame.photoUrl}
             alt={frame.subject}
             style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
+              maxWidth: '100%',
+              maxHeight: 'calc(88vh - 84px)',
+              width: 'auto',
+              height: 'auto',
+              objectFit: 'contain',
               display: 'block',
             }}
           />
@@ -116,17 +122,6 @@ export function PhotoReveal({ frame, onDismiss }: PhotoRevealProps) {
           opacity: 0.03,
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E")`,
           backgroundSize: '100px',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Thin inner shadow */}
-        <div style={{
-          position: 'absolute',
-          top: 28,
-          left: 24,
-          right: 24,
-          bottom: 40,
-          boxShadow: 'inset 0 0 3px rgba(0, 0, 0, 0.12)',
           pointerEvents: 'none',
         }} />
       </div>
