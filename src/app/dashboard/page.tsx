@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import { gsap } from "gsap";
 import type { Album } from "@/lib/db/schema";
 
 export default function DashboardPage() {
@@ -53,7 +54,7 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Section header */}
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex items-center justify-between mb-10 dash-animate" style={{ animationDelay: '0.1s' }}>
         <div className="flex items-center gap-4">
           <div style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(255,184,0,0.6)" }} />
           <span className="font-mono uppercase" style={{ fontSize: 9, letterSpacing: "0.3em", color: "rgba(255,255,255,0.3)" }}>
@@ -81,7 +82,7 @@ export default function DashboardPage() {
       {/* Create form */}
       {showCreate && (
         <div
-          className="mb-8 p-6 rounded-lg"
+          className="mb-8 p-6 rounded-lg form-animate"
           style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)" }}
         >
           <form onSubmit={handleCreate} className="space-y-4">
@@ -162,89 +163,164 @@ export default function DashboardPage() {
 
       {/* Album grid */}
       {!loading && albums.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {albums.map((album) => (
-            <div
-              key={album.id}
-              className="group rounded-lg overflow-hidden transition-all"
-              style={{
-                background: "#141414",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              {/* Cover */}
-              <div className="relative" style={{ height: 160, background: "#0D0D0D" }}>
-                {album.coverKey ? (
-                  <img
-                    src={`/api/dashboard/photos/serve/${album.coverKey}`}
-                    alt={album.title}
-                    className="w-full h-full object-cover"
-                    style={{ opacity: 0.85 }}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <span className="font-mono" style={{ fontSize: 28, color: "rgba(255,184,0,0.12)" }}>◆</span>
-                  </div>
-                )}
-                {/* Overlay */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3"
-                  style={{ background: "rgba(0,0,0,0.6)" }}
-                >
-                  <Link
-                    href={`/dashboard/albums/${album.id}`}
-                    className="font-mono uppercase px-4 py-2 rounded transition-all"
-                    style={{
-                      fontSize: 9, letterSpacing: "0.15em",
-                      background: "rgba(255,184,0,0.2)", color: "rgba(255,184,0,0.9)",
-                      border: "1px solid rgba(255,184,0,0.3)",
-                    }}
-                  >
-                    Open
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(album.id, album.title)}
-                    className="font-mono uppercase px-4 py-2 rounded transition-all"
-                    style={{
-                      fontSize: 9, letterSpacing: "0.15em",
-                      background: "rgba(255,68,68,0.1)", color: "rgba(255,68,68,0.8)",
-                      border: "1px solid rgba(255,68,68,0.2)",
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-
-              {/* Info */}
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-sans font-medium truncate" style={{ fontSize: 15, color: "#F5F5F5" }}>
-                    {album.title}
-                  </h3>
-                  <span className="font-mono" style={{ fontSize: 10, color: "rgba(255,184,0,0.5)" }}>
-                    {album.photoCount}
-                  </span>
-                </div>
-                {album.description && (
-                  <p className="font-mono mt-1 truncate" style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
-                    {album.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-3 mt-3">
-                  <span className="font-mono" style={{ fontSize: 8, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)" }}>
-                    {new Date(album.createdAt).toLocaleDateString()}
-                  </span>
-                  <span className="font-mono" style={{ fontSize: 8, color: "rgba(255,184,0,0.2)" }}>◆</span>
-                  <span className="font-mono" style={{ fontSize: 8, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)" }}>
-                    {album.photoCount} {album.photoCount === 1 ? "frame" : "frames"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <AlbumGrid albums={albums} onDelete={handleDelete} />
       )}
+    </div>
+  );
+}
+
+function AlbumGrid({ albums, onDelete }: { albums: Album[]; onDelete: (id: string, title: string) => void }) {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (!gridRef.current || hasAnimated.current) return;
+    hasAnimated.current = true;
+
+    const cards = gridRef.current.children;
+    gsap.fromTo(
+      cards,
+      { opacity: 0, y: 32, scale: 0.97 },
+      {
+        opacity: 1, y: 0, scale: 1,
+        duration: 0.6,
+        stagger: 0.08,
+        ease: 'power3.out',
+      }
+    );
+  }, [albums]);
+
+  return (
+    <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {albums.map((album) => (
+        <AlbumCard key={album.id} album={album} onDelete={onDelete} />
+      ))}
+    </div>
+  );
+}
+
+function AlbumCard({ album, onDelete }: { album: Album; onDelete: (id: string, title: string) => void }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    gsap.to(cardRef.current, {
+      rotateY: x * 6,
+      rotateX: -y * 4,
+      scale: 1.02,
+      boxShadow: `${-x * 16}px ${y * 16}px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,184,0,0.08)`,
+      duration: 0.3,
+      ease: 'power2.out',
+    });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!cardRef.current) return;
+    gsap.to(cardRef.current, {
+      rotateY: 0,
+      rotateX: 0,
+      scale: 1,
+      boxShadow: '0 0 0 rgba(0,0,0,0), 0 0 0 1px rgba(255,255,255,0.06)',
+      duration: 0.5,
+      ease: 'power2.out',
+    });
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      className="group rounded-lg overflow-hidden"
+      style={{
+        opacity: 0,
+        background: "#141414",
+        border: "1px solid rgba(255,255,255,0.06)",
+        perspective: '800px',
+        transformStyle: 'preserve-3d',
+        willChange: 'transform',
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Cover */}
+      <div className="relative overflow-hidden" style={{ height: 160, background: "#0D0D0D" }}>
+        {album.coverKey ? (
+          <img
+            src={`/api/dashboard/photos/serve/${album.coverKey}`}
+            alt={album.title}
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            style={{ opacity: 0.85 }}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <span className="font-mono" style={{ fontSize: 28, color: "rgba(255,184,0,0.12)" }}>◆</span>
+          </div>
+        )}
+        {/* Gradient overlay */}
+        <div
+          className="absolute inset-0 transition-opacity duration-500"
+          style={{
+            background: "linear-gradient(to top, rgba(20,20,20,0.95) 0%, rgba(20,20,20,0.3) 40%, transparent 100%)",
+            opacity: 0.5,
+          }}
+        />
+        {/* Hover overlay */}
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3"
+          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+        >
+          <Link
+            href={`/dashboard/albums/${album.id}`}
+            className="font-mono uppercase px-4 py-2 rounded transition-all duration-200 hover:scale-105"
+            style={{
+              fontSize: 9, letterSpacing: "0.15em",
+              background: "rgba(255,184,0,0.2)", color: "rgba(255,184,0,0.9)",
+              border: "1px solid rgba(255,184,0,0.3)",
+            }}
+          >
+            Open
+          </Link>
+          <button
+            onClick={() => onDelete(album.id, album.title)}
+            className="font-mono uppercase px-4 py-2 rounded transition-all duration-200 hover:scale-105"
+            style={{
+              fontSize: 9, letterSpacing: "0.15em",
+              background: "rgba(255,68,68,0.1)", color: "rgba(255,68,68,0.8)",
+              border: "1px solid rgba(255,68,68,0.2)",
+            }}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-sans font-medium truncate" style={{ fontSize: 15, color: "#F5F5F5" }}>
+            {album.title}
+          </h3>
+          <span className="font-mono" style={{ fontSize: 10, color: "rgba(255,184,0,0.5)" }}>
+            {album.photoCount}
+          </span>
+        </div>
+        {album.description && (
+          <p className="font-mono mt-1 truncate" style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
+            {album.description}
+          </p>
+        )}
+        <div className="flex items-center gap-3 mt-3">
+          <span className="font-mono" style={{ fontSize: 8, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)" }}>
+            {new Date(album.createdAt).toLocaleDateString()}
+          </span>
+          <span className="font-mono" style={{ fontSize: 8, color: "rgba(255,184,0,0.2)" }}>◆</span>
+          <span className="font-mono" style={{ fontSize: 8, letterSpacing: "0.15em", color: "rgba(255,255,255,0.15)" }}>
+            {album.photoCount} {album.photoCount === 1 ? "frame" : "frames"}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

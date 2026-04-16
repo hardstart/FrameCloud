@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { gsap } from "gsap";
 
 interface Props {
   userName: string;
@@ -12,6 +14,27 @@ interface Props {
 export default function DashboardShell({ userName, tenantName, children }: Props) {
   const router = useRouter();
   const pathname = usePathname();
+  const headerRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (hasAnimated.current) return;
+    hasAnimated.current = true;
+
+    if (headerRef.current) {
+      gsap.fromTo(headerRef.current,
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
+      );
+    }
+    if (mainRef.current) {
+      gsap.fromTo(mainRef.current,
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.15 }
+      );
+    }
+  }, []);
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -28,6 +51,7 @@ export default function DashboardShell({ userName, tenantName, children }: Props
 
       {/* Top bar */}
       <header
+        ref={headerRef}
         className="sticky top-0 z-50"
         style={{
           background: "rgba(10,10,10,0.92)",
@@ -105,7 +129,7 @@ export default function DashboardShell({ userName, tenantName, children }: Props
       </header>
 
       {/* Content */}
-      <main className="px-6 sm:px-10 lg:px-14 py-10 max-w-[1400px] mx-auto">
+      <main ref={mainRef} className="px-6 sm:px-10 lg:px-14 py-10 max-w-[1400px] mx-auto">
         {children}
       </main>
     </div>

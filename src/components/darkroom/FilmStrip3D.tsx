@@ -45,7 +45,7 @@ export function FilmStrip3D({ frames, activeFrame, scrollOffset, onDip }: FilmSt
     }
   });
 
-  // Dip animation
+  // Dip animation — cinematic feel with liquid resistance
   useEffect(() => {
     if (activeFrame === null) return;
     const ref = frameGroupRefs.current.get(activeFrame);
@@ -53,18 +53,41 @@ export function FilmStrip3D({ frames, activeFrame, scrollOffset, onDip }: FilmSt
 
     const origY = ref.position.y;
     const origRx = ref.rotation.x;
+    const origRz = ref.rotation.z;
 
     const tl = gsap.timeline();
-    // Quick dunk down
-    tl.to(ref.position, { y: origY - 0.85, duration: 0.25, ease: 'power3.in' })
-      .to(ref.rotation, { x: origRx - 0.04, duration: 0.25, ease: 'power2.in' }, '<')
-      // Brief hold submerged
-      .to(ref.position, { y: origY - 0.9, duration: 0.15, ease: 'sine.inOut' })
-      // Lift back out
-      .to(ref.position, { y: origY + 0.03, duration: 0.35, ease: 'power2.out' })
-      .to(ref.rotation, { x: origRx, duration: 0.3, ease: 'power2.out' }, '<0.05')
-      // Tiny settle bounce
-      .to(ref.position, { y: origY, duration: 0.15, ease: 'sine.inOut' });
+
+    // Anticipation lift — slight upward pull before the dip
+    tl.to(ref.position, { y: origY + 0.06, duration: 0.12, ease: 'power2.out' })
+      .to(ref.rotation, { x: origRx + 0.015, duration: 0.12, ease: 'power2.out' }, '<')
+
+      // Gravity drop into liquid — accelerating fall
+      .to(ref.position, { y: origY - 0.75, duration: 0.3, ease: 'power2.in' })
+      .to(ref.rotation, { x: origRx - 0.06, z: origRz + 0.012, duration: 0.3, ease: 'power2.in' }, '<')
+
+      // Liquid resistance — decelerate as it hits the surface
+      .to(ref.position, { y: origY - 0.92, duration: 0.25, ease: 'power1.out' })
+      .to(ref.rotation, { x: origRx - 0.08, duration: 0.25, ease: 'sine.out' }, '<')
+
+      // Submerged soak — gentle drift at the bottom
+      .to(ref.position, { y: origY - 0.88, duration: 0.35, ease: 'sine.inOut' })
+      .to(ref.rotation, { z: origRz - 0.008, duration: 0.35, ease: 'sine.inOut' }, '<')
+
+      // Slow lift — pulling against liquid surface tension
+      .to(ref.position, { y: origY - 0.4, duration: 0.4, ease: 'power1.inOut' })
+      .to(ref.rotation, { x: origRx - 0.02, z: origRz, duration: 0.4, ease: 'sine.inOut' }, '<')
+
+      // Break free from surface — slight acceleration
+      .to(ref.position, { y: origY + 0.05, duration: 0.25, ease: 'power2.out' })
+      .to(ref.rotation, { x: origRx + 0.008, duration: 0.25, ease: 'power2.out' }, '<')
+
+      // Settle with dampened bounce
+      .to(ref.position, { y: origY - 0.015, duration: 0.18, ease: 'sine.inOut' })
+      .to(ref.rotation, { x: origRx - 0.003, duration: 0.18, ease: 'sine.inOut' }, '<')
+
+      // Final rest
+      .to(ref.position, { y: origY, duration: 0.15, ease: 'sine.out' })
+      .to(ref.rotation, { x: origRx, duration: 0.15, ease: 'sine.out' }, '<');
 
     return () => { tl.kill(); };
   }, [activeFrame]);
@@ -147,35 +170,52 @@ function FilmFrame3D({ frame, index, texture, zPos, isActive, onTap, onMount }: 
     envMapIntensity: 0.2,
   }), [texture]);
 
-  // Smooth transition for negative to positive
+  // Organic negative-to-positive chemical development transition
   const devTarget = useRef(0);
   const devCurrent = useRef(0);
 
   useFrame(() => {
     devTarget.current = frame.developed ? 1 : 0;
-    devCurrent.current += (devTarget.current - devCurrent.current) * 0.06;
+    // Slower lerp for organic chemical development feel
+    const speed = devCurrent.current < devTarget.current ? 0.035 : 0.06;
+    devCurrent.current += (devTarget.current - devCurrent.current) * speed;
     const d = devCurrent.current;
 
     photoMat.map = texture;
 
-    if (d < 0.5) {
-      const neg = 1 - d * 2;
+    // Smoothstep for more natural transition curve
+    const smooth = d * d * (3 - 2 * d);
+
+    if (smooth < 0.4) {
+      // Deep negative: heavy orange cast, dark, grainy look
+      const neg = 1 - smooth * 2.5;
       photoMat.color.setRGB(
-        0.75 * neg + (1 - neg),
-        0.45 * neg + (1 - neg),
-        0.15 * neg + (1 - neg) * 0.95,
+        0.7 * neg + (1 - neg) * 0.85,
+        0.35 * neg + (1 - neg) * 0.75,
+        0.1 * neg + (1 - neg) * 0.6,
       );
-      photoMat.roughness = 0.7;
-      photoMat.envMapIntensity = 0.1;
+      photoMat.roughness = 0.75 - smooth * 0.3;
+      photoMat.envMapIntensity = 0.05 + smooth * 0.15;
+    } else if (smooth < 0.7) {
+      // Mid-development: colors emerging, still slightly warm
+      const mid = (smooth - 0.4) / 0.3;
+      photoMat.color.setRGB(
+        0.65 + mid * 0.2,
+        0.6 + mid * 0.25,
+        0.5 + mid * 0.3,
+      );
+      photoMat.roughness = 0.6 - mid * 0.2;
+      photoMat.envMapIntensity = 0.2 + mid * 0.2;
     } else {
-      const pos = (d - 0.5) * 2;
+      // Full development: bright, clear, slight wet sheen
+      const pos = (smooth - 0.7) / 0.3;
       photoMat.color.setRGB(
-        0.7 + pos * 0.3,
-        0.7 + pos * 0.3,
-        0.68 + pos * 0.32,
+        0.85 + pos * 0.15,
+        0.85 + pos * 0.15,
+        0.8 + pos * 0.2,
       );
-      photoMat.roughness = 0.5 - pos * 0.25;
-      photoMat.envMapIntensity = 0.15 + pos * 0.4;
+      photoMat.roughness = 0.4 - pos * 0.18;
+      photoMat.envMapIntensity = 0.4 + pos * 0.2;
     }
     photoMat.needsUpdate = true;
   });

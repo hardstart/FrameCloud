@@ -33,7 +33,7 @@ export function DarkroomScene({ frames, activeFrame, scrollOffset, onDip }: Dark
         shadows
       >
         <Suspense fallback={null}>
-          <CameraRig />
+          <CameraRig dipActive={activeFrame !== null} />
           <Lighting />
           <Tub />
           <Liquid dipActive={activeFrame !== null} />
@@ -53,14 +53,28 @@ export function DarkroomScene({ frames, activeFrame, scrollOffset, onDip }: Dark
   );
 }
 
-function CameraRig() {
+function CameraRig({ dipActive }: { dipActive: boolean }) {
   const { camera } = useThree();
   const t = useRef(0);
+  const shakeEnergy = useRef(0);
+  const wasDipping = useRef(false);
 
   useFrame((_, delta) => {
     t.current += delta * 0.25;
-    camera.position.x = Math.sin(t.current * 0.6) * 0.06;
-    camera.position.y = 4.5 + Math.sin(t.current * 0.4) * 0.025;
+
+    // Trigger shake on dip start
+    if (dipActive && !wasDipping.current) {
+      shakeEnergy.current = 1.0;
+    }
+    wasDipping.current = dipActive;
+    shakeEnergy.current *= 0.94;
+
+    const shake = shakeEnergy.current;
+    const shakeX = shake * (Math.sin(t.current * 45) * 0.012 + Math.sin(t.current * 67) * 0.006);
+    const shakeY = shake * (Math.cos(t.current * 53) * 0.008);
+
+    camera.position.x = Math.sin(t.current * 0.6) * 0.06 + shakeX;
+    camera.position.y = 4.5 + Math.sin(t.current * 0.4) * 0.025 + shakeY;
     camera.lookAt(0, -0.6, -0.3);
   });
 
@@ -224,17 +238,79 @@ function Tongs({ position }: { position: [number, number, number] }) {
 
 function Liquid({ dipActive }: { dipActive: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const dipStartTime = useRef(0);
+  const wasDipping = useRef(false);
+  const settleEnergy = useRef(0);
 
   useFrame(() => {
     if (!meshRef.current) return;
     const mat = meshRef.current.material as THREE.MeshPhysicalMaterial;
     const t = performance.now() * 0.001;
-    mat.roughness = 0.06 + Math.sin(t * 0.6) * 0.015;
+    const geo = meshRef.current.geometry;
+    const posAttr = geo.attributes.position;
 
+    if (dipActive && !wasDipping.current) {
+      dipStartTime.current = t;
+      wasDipping.current = true;
+      settleEnergy.current = 1.0;
+    } else if (!dipActive && wasDipping.current) {
+      wasDipping.current = false;
+    }
+
+    // Decay settle energy after dip ends
+    if (!dipActive) {
+      settleEnergy.current *= 0.97;
+    }
+
+    const dipElapsed = t - dipStartTime.current;
+    const isRecentDip = dipActive || settleEnergy.current > 0.01;
+
+    // Animate liquid surface with vertex displacement
+    if (isRecentDip) {
+      for (let i = 0; i < posAttr.count; i++) {
+        const x = posAttr.getX(i);
+        const y = posAttr.getY(i);
+
+        // Radial distance from center (where frame dips)
+        const dist = Math.sqrt(x * x + y * y);
+
+        let displacement = 0;
+
+        if (dipActive) {
+          // Impact phase: concentric waves radiating from center
+          const impactPhase = Math.min(dipElapsed * 2, 1);
+          const waveSpeed = 3.0;
+          const wave = Math.sin(dist * 4 - dipElapsed * waveSpeed * 6) * 0.015;
+          const falloff = Math.exp(-dist * 0.6) * impactPhase;
+          displacement = wave * falloff;
+
+          // Central depression from the film strip entering
+          const centralDip = Math.exp(-dist * 1.2) * 0.02 * impactPhase;
+          displacement -= centralDip;
+        } else {
+          // Settling: damped oscillation
+          const energy = settleEnergy.current;
+          const wave = Math.sin(dist * 3 - t * 4) * 0.008 * energy;
+          const falloff = Math.exp(-dist * 0.4);
+          displacement = wave * falloff;
+        }
+
+        posAttr.setZ(i, displacement);
+      }
+      posAttr.needsUpdate = true;
+      geo.computeVertexNormals();
+    }
+
+    // Material responds to disturbance
+    const disturbance = dipActive ? 0.4 : settleEnergy.current * 0.3;
+    mat.roughness = 0.06 + Math.sin(t * 0.6) * 0.015 + disturbance * 0.08;
+    mat.clearcoatRoughness = 0.04 + disturbance * 0.06;
+
+    // Gentle sway
     if (dipActive) {
-      meshRef.current.position.y = -0.5 + Math.sin(t * 6) * 0.01;
+      meshRef.current.position.y = -0.5 + Math.sin(t * 4) * 0.008 + Math.sin(t * 7) * 0.004;
     } else {
-      meshRef.current.position.y += (-0.5 - meshRef.current.position.y) * 0.02;
+      meshRef.current.position.y += (-0.5 - meshRef.current.position.y) * 0.03;
     }
   });
 

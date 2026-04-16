@@ -53,7 +53,7 @@ export function useDarkroom(photos: DarkroomPhoto[]) {
       navigator.vibrate([15, 50, 15]);
     }
 
-    // Develop completes after dip animation
+    // Develop completes after the dip animation settles (~1.85s timeline)
     setTimeout(() => {
       setFrames(prev =>
         prev.map(f =>
@@ -65,11 +65,11 @@ export function useDarkroom(photos: DarkroomPhoto[]) {
       setActiveFrame(null);
       dipLockRef.current = false;
 
-      // Reveal fullscreen after a brief pause to see the developed frame
+      // Reveal fullscreen after a brief pause to appreciate the developed frame
       setTimeout(() => {
         setRevealedFrame(frameId);
-      }, 400);
-    }, 1000);
+      }, 500);
+    }, 1850);
   }, [frames]);
 
   const dismissReveal = useCallback(() => {

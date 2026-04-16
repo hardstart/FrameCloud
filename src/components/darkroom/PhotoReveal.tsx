@@ -18,15 +18,17 @@ export function PhotoReveal({ frame, onDismiss }: PhotoRevealProps) {
 
     const tl = gsap.timeline();
 
+    // Backdrop fades in with slight delay for cinematic timing
     tl.fromTo(containerRef.current,
       { opacity: 0 },
-      { opacity: 1, duration: 0.4, ease: 'power2.out' },
+      { opacity: 1, duration: 0.5, ease: 'power2.out' },
     );
 
+    // Photo rises from the darkroom — emerging from chemical bath feel
     tl.fromTo(imgRef.current,
-      { scale: 0.3, y: 40, opacity: 0 },
-      { scale: 1, y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
-      '<0.1',
+      { scale: 0.15, y: 80, opacity: 0, filter: 'blur(8px) saturate(0.3)' },
+      { scale: 1, y: 0, opacity: 1, filter: 'blur(0px) saturate(1)', duration: 0.7, ease: 'power2.out' },
+      '<0.12',
     );
 
     return () => { tl.kill(); };
@@ -41,8 +43,8 @@ export function PhotoReveal({ frame, onDismiss }: PhotoRevealProps) {
     }
 
     const tl = gsap.timeline({ onComplete: onDismiss });
-    tl.to(imgRef.current, { scale: 0.3, y: 40, opacity: 0, duration: 0.35, ease: 'power2.in' })
-      .to(containerRef.current, { opacity: 0, duration: 0.3, ease: 'power2.in' }, '<0.05');
+    tl.to(imgRef.current, { scale: 0.6, y: 30, opacity: 0, filter: 'blur(4px)', duration: 0.35, ease: 'power2.in' })
+      .to(containerRef.current, { opacity: 0, duration: 0.3, ease: 'power2.in' }, '<0.08');
   };
 
   return (
